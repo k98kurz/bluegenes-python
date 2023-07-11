@@ -33,7 +33,7 @@ class Gene:
 
     def insert(self, index: int = None, base: int|float|str = None) -> Gene:
         """Inserts the base at the index. If index is None, the base is
-            inserted as a random index. If base is None, adds a random
+            inserted at a random index. If base is None, adds a random
             int base. Returns self for chaining operations.
         """
         index = index if index is not None else randint(0, len(self.bases)-1)
@@ -128,7 +128,7 @@ class Gene:
             vert(len(indices) <= max_size,
                  f"can have at most {max_size} indices")
         else:
-            swaps = randint(0, max_swaps)
+            swaps = randint(1, max_swaps)
             indices = list(set([randint(0, max_size-1) for _ in range(swaps)]))
             indices.sort()
 
@@ -183,14 +183,155 @@ class Allele:
     name: str = field(default_factory=lambda: random_str(3))
     genes: list[Gene] = field(default_factory=list)
 
-    def add_gene(self, gene: Gene):
-        ...
+    def copy(self) -> Allele:
+        """Returns an exact copy of the Allele, copying the underlying
+            Genes as well.
+        """
+        return Allele(name=self.name, genes=[g.copy() for g in self.genes])
+
+    def insert(self, index: int = None, gene: Gene = None, *,
+               n_bases: int = None, max_base_size: int = 10,
+               base_factory: Callable[[None], int|float|str] = None,
+               factory_args: list = [], factory_kwargs: dict = {}) -> Allele:
+        """Inserts the gene at the index. If index is None, the gene is
+            inserted at a random index. If gene is None, adds a random
+            gene using Gene.make, passing the kwargs. Returns self for
+            chaining operations.
+        """
+        index = index if index is not None else randint(0, len(self.genes)-1)
+        typert(index, int, "index")
+        vert(index < len(self.genes), "index out of range")
+
+        if gene is None:
+            n_bases = n_bases or randint(0, max(len(g.bases) for g in self.genes))
+            typert(n_bases, int, "n_bases")
+            gene = Gene.make(
+                n_bases, max_base_size, base_factory, factory_args,
+                factory_kwargs
+            )
+        typert(gene, Gene, "gene")
+
+        self.genes.insert(index, gene)
+        return self
+
+    def append(self, gene: Gene = None, /, *, n_bases: int = None,
+               max_base_size: int = 10,
+               base_factory: Callable[[None], int|float|str] = None,
+               factory_args: list = [], factory_kwargs: dict = {}) -> Allele:
+        """Adds a gene to the end of the allele. If gene is None, adds a
+            random Gene using Gene.make and passing kwargs. Returns self
+            for chaining operations.
+        """
+        return self.insert(
+            len(self.genes), gene, n_bases=n_bases, max_base_size=max_base_size,
+            base_factory=base_factory, factory_args=factory_args,
+            factory_kwargs=factory_kwargs
+        )
+
+    def duplicate(self, index: int = None) -> Allele:
+        """Duplicates the Gene at the index. If index is None, the Gene
+            at a random index is duplicated. Returns self for chaining
+            operations.
+        """
+        index = index if index is not None else randint(0, len(self.genes)-1)
+        typert(index, int, "index")
+        vert(0 <= index < len(self.genes), "index out of range")
+        return self.insert(index, self.genes[index].copy())
+
+    def delete(self, index: int = None) -> Allele:
+        """Deletes the Gene at the index. If index is None, a Gene is
+            deleted at a random index. Returns self for chaining
+            operations.
+        """
+        index = index if index is not None else randint(0, len(self.genes)-1)
+        del self.genes[index]
+        return self
+
+    def substitute(self, index: int = None, gene: Gene = None, *,
+                   n_bases: int = None, max_base_size: int = 10,
+                   base_factory: Callable[[None], int|float|str] = None,
+                   factory_args: list = [], factory_kwargs: dict = {}) -> Allele:
+        """Substitutes the Gene at the index with the given gene. If
+            index is None, a random index will be used. If gene is None,
+            adds a random gene using Gene.make, passing the kwargs.
+            Returns self for chaining operations.
+        """
+        index = index if index is not None else randint(0, len(self.genes)-1)
+        typert(index, int, "index")
+        vert(index < len(self.genes), "index out of range")
+
+        if gene is None:
+            n_bases = n_bases or randint(0, max(len(g.bases) for g in self.genes))
+            typert(n_bases, int, "n_bases")
+            gene = Gene.make(
+                n_bases, max_base_size, base_factory, factory_args,
+                factory_kwargs
+            )
+        typert(gene, Gene, "gene")
+
+        self.genes[index] = gene
+        return self
+
+    def recombine(self, other: Allele, indices: list[int] = None,
+                  recombine_genes: bool = True,
+                  match_genes: bool = True) -> Allele:
+        """Recombines with the other Allele, swapping at the given
+            indices. If indices is None, between 1 and ceil(log(len(self.genes)))
+            random indices will be chosen. Recombines individual Genes
+            if recombine_genes is True. Recombines only Genes with
+            matching names if match_genes is True. Returns the new
+            Allele.
+        """
+        typert(other, Allele, "other")
+        vert(len(other.genes) > 0, "other must have genes")
+        max_size = min(len(self.genes), len(other.genes))
+        max_swaps = ceil(log(max_size)) or 1
+        tert(indices is None or type(indices) is list,
+             "indices must be list[int] or None")
+        if type(indices) is list:
+            tert(all(type(i) is int for i in indices),
+                 "indices must be list[int] or None")
+            vert(len(indices) <= max_size,
+                 f"can have at most {max_size} indices")
+        else:
+            swaps = randint(0, max_swaps)
+            indices = list(set([randint(0, max_size-1) for _ in range(swaps)]))
+            indices.sort()
+
+        name = self.name
+        if self.name != other.name:
+            name_size = min(len(self.name), len(other.name))
+            name_swap = randint(1, name_size-1)
+            name = self.name[:name_swap] + other.name[name_swap:]
+
+        genes = [*self.genes]
+        other_genes = [*other.genes]
+        swapped = False
+        for i in indices:
+            genes[i:] = self.genes[i:] if swapped else other.genes[i:]
+            other_genes[i:] = other.genes[i:] if swapped else self.genes[i:]
+        genes = [g.copy() for g in genes]
+        other_genes = [g.copy() for g in other_genes]
+
+        if recombine_genes:
+            for i in range(max_size):
+                if genes[i].name == other_genes[i].name or not match_genes:
+                    genes[i] = genes[i].recombine(other_genes[i])
+
+        return Allele(name=name, genes=genes)
 
     @classmethod
-    def make(cls, n_genes: int, n_bases: int, max_base_size: int = 10,
-             name: str = None) -> Allele:
+    def make(cls, n_genes: int, n_bases: int, name: str = None, *,
+             max_base_size: int = 10,
+             base_factory: Callable[[None], int|float|str] = None,
+             factory_args: list = [], factory_kwargs: dict = {}) -> Allele:
+        """Makes and returns an Allele of randomized Genes."""
         genes = [
-            Gene.make(n_bases=n_bases, max_base_size=max_base_size)
+            Gene.make(
+                n_bases=n_bases, max_base_size=max_base_size,
+                base_factory=base_factory, factory_args=factory_args,
+                factory_kwargs=factory_kwargs
+            )
             for _ in range(n_genes)
         ]
         if name:
@@ -198,15 +339,21 @@ class Allele:
         return cls(genes=genes)
 
     def to_dict(self) -> dict:
+        """Serialize the Allele to a dict."""
         return {
             self.name: [gene.to_dict() for gene in self.genes],
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> Allele:
-        for name, genes in data.iter():
+        """Deserialize an Allele from a dict."""
+        for name, genes in data.items():
             unpacked = [Gene.from_dict(d) for d in genes]
             return cls(name=name, genes=unpacked)
+
+    def __hash__(self) -> int:
+        """Make Allele hashable."""
+        return hash((self.name, hash(tuple(self.genes))))
 
 
 @dataclass

@@ -107,6 +107,9 @@ class TestGene(unittest.TestCase):
             names.add(gene3.name)
         assert len(results) > 1
         assert len(names) > 1
+        for g in results:
+            for base in g:
+                assert base in list(range(20))
 
     def test_make_returns_random_Gene(self):
         gene = genes.Gene.make(5)
@@ -126,7 +129,7 @@ class TestGene(unittest.TestCase):
         assert all(type(b) is float for b in gene.bases)
         assert len(set(gene.bases)) >= 4
 
-        float_factory = lambda max: random()*max
+        float_factory = lambda mult: random()*mult
         gene = genes.Gene.make(5, base_factory=float_factory, factory_args=[-2])
         assert all(-2 <= b <= 0 for b in gene.bases)
 
@@ -135,7 +138,245 @@ class TestGene(unittest.TestCase):
         assert type(encoded) is dict
         decoded = genes.Gene.from_dict(encoded)
         assert type(decoded) is genes.Gene
-        assert hash(self.gene) == hash(decoded)
+        assert self.gene == decoded
+        assert self.gene is not decoded
+
+        float_factory = lambda: random()
+        gene = genes.Gene.make(5, base_factory=float_factory)
+        encoded = gene.to_dict()
+        assert type(encoded) is dict
+        decoded = genes.Gene.from_dict(encoded)
+        assert type(decoded) is genes.Gene
+        assert decoded == gene
+        assert decoded is not gene
+
+        str_factory = lambda: genes.random_str(5)
+        gene = genes.Gene.make(5, base_factory=str_factory)
+        encoded = gene.to_dict()
+        assert type(encoded) is dict
+        decoded = genes.Gene.from_dict(encoded)
+        assert type(decoded) is genes.Gene
+        assert decoded == gene
+        assert decoded is not gene
+
+
+class TestAllele(unittest.TestCase):
+    def first_allele(self) -> genes.Allele:
+        return genes.Allele("test", [
+            genes.Gene("g1", [1, 2, 3]),
+            genes.Gene("g2", [4, 5, 6]),
+            genes.Gene("g3", [7, 8, 9]),
+        ])
+
+    def alt_allele(self) -> genes.Allele:
+        return genes.Allele("test", [
+            genes.Gene("g1", [10, 11, 12]),
+            genes.Gene("g2", [13, 14, 15]),
+            genes.Gene("g3", [16, 17, 18]),
+        ])
+
+    def second_allele(self) -> genes.Allele:
+        return genes.Allele("diff", [
+            genes.Gene("g4", [10, 11, 12]),
+            genes.Gene("g5", [13, 14, 15]),
+            genes.Gene("g6", [16, 17, 18]),
+        ])
+
+    def first_gene(self) -> genes.Gene:
+        return genes.Gene("test", [1,2,3])
+
+    def second_gene(self) -> genes.Gene:
+        return genes.Gene("diff", [4,5,6])
+
+    def setUp(self) -> None:
+        self.allele = self.first_allele()
+        self.alternate = self.alt_allele()
+        self.other = self.second_allele()
+        return super().setUp()
+
+    def test_Allele_is_hashable(self):
+        hash(self.allele)
+
+    def test_copy_returns_identical_Allele_containing_identical_genes(self):
+        copy = self.allele.copy()
+        assert type(copy) is genes.Allele
+        assert copy is not self.allele
+        assert copy == self.allele
+
+        for a, b in zip(copy.genes, self.allele.genes):
+            assert a == b
+            assert a.name == b.name
+            assert a.bases == b.bases
+            assert a is not b
+
+    def test_insert_inserts_specified_or_random_gene_at_specified_or_random_index(self):
+        g4 = genes.Gene("g4", [10, 11, 12])
+        g5 = genes.Gene("g5", [13, 14, 15])
+        self.allele.insert(0, g4)
+        assert self.allele.genes[0] == g4
+        self.allele.insert(2, g5)
+        assert self.allele.genes[2] == g5
+
+        indices = set()
+        ref_gene = self.first_gene()
+        for _ in range(5):
+            allele = self.first_allele()
+            allele.insert(gene=ref_gene)
+            indices.add(allele.genes.index(ref_gene))
+        assert len(indices) > 1
+
+        gs = set()
+        for _ in range(5):
+            allele = self.first_allele()
+            allele.insert(0)
+            gs.add(allele.genes[0])
+        assert len(gs) >= 4
+
+    def test_duplicate_duplicates_Gene_at_specified_or_random_index(self):
+        self.allele.duplicate(0)
+        assert self.allele.genes[0] == self.allele.genes[1]
+        assert self.allele.genes[0] is not self.allele.genes[1]
+
+        indices = set()
+        for _ in range(5):
+            allele = self.first_allele()
+            allele.duplicate()
+            for i in range(len(allele.genes)):
+                if allele.genes[i] == allele.genes[i+1]:
+                    indices.add(i)
+                    break
+        assert len(indices) >= 2
+
+    def test_delete_deletes_Gene_at_specified_or_random_index(self):
+        assert len(self.allele.genes) == 3
+        self.allele.delete(0)
+        assert len(self.allele.genes) == 2
+        assert self.allele.genes[0].name == "g2"
+        assert self.allele.genes[1].name == "g3"
+
+        indices = set()
+        for _ in range(5):
+            allele = self.first_allele()
+            allele.delete()
+            if allele.genes[0].name != "g1":
+                indices.add(0)
+            elif allele.genes[1].name != "g2":
+                indices.add(1)
+            else:
+                indices.add(2)
+        assert len(indices) >= 2
+
+    def test_substitute_replaces_Gene_with_specified_or_random_Gene_at_specified_or_random_index(self):
+        ref_gene = self.first_gene()
+        self.allele.substitute(1, ref_gene)
+        assert self.allele.genes[1] == ref_gene
+
+        gs = set()
+        indices = set()
+        for _ in range(10):
+            allele = self.first_allele()
+            g_at_1 = allele.genes[1]
+            allele.substitute(1)
+            assert allele.genes[1] != g_at_1
+            gs.add(allele.genes[1])
+            allele.substitute(gene=g_at_1)
+            indices.add(allele.genes.index(g_at_1))
+        assert len(gs) >= 9
+        assert len(indices) >= 2
+
+    def test_recombine_swaps_Genes_between_Alleles_at_specified_or_random_indices(self):
+        al3 = self.allele.recombine(self.other, [1], False)
+        assert al3.genes == [self.allele.genes[0], *self.other.genes[1:]]
+
+        swapset = set()
+        for _ in range(5):
+            al1 = self.first_allele()
+            al2 = self.second_allele()
+            al3 = al1.recombine(al2, recombine_genes=False)
+            swapped = False
+            swaps = []
+            for i in range(len(al3.genes)):
+                if swapped and al3.genes[i] == al1.genes[i]:
+                    swapped = False
+                    swaps.append(i)
+                elif al3.genes[i] == al2.genes[i]:
+                    swapped = True
+                    swaps.append(i)
+            swapset.add(tuple(swaps))
+        assert len(swapset) >= 2
+
+    def test_recombine_recombines_underlying_Genes_with_matching_name_and_index_by_default(self):
+        allele = self.allele.recombine(self.alternate, [1])
+        recombined_genes = 0
+        allele_bases = [b for g in self.allele.genes for b in g.bases]
+        other_bases = [b for g in self.other.genes for b in g.bases]
+        for g in allele.genes:
+            if g not in self.allele.genes and g not in self.alternate.genes:
+                recombined_genes += 1
+            assert all(b in allele_bases or b in other_bases for b in g.bases)
+        assert recombined_genes >= 1
+
+    def test_recombine_does_not_recombine_underlying_Genes_with_different_names_by_default(self):
+        allele = self.allele.recombine(self.other, [1])
+        recombined_genes = 0
+        for g in allele.genes:
+            if g not in self.allele.genes and g not in self.other.genes:
+                recombined_genes += 1
+        assert recombined_genes == 0
+
+    def test_recombine_can_recombine_underlying_Genes_with_different_names(self):
+        allele = self.allele.recombine(self.other, [1], match_genes=False)
+        recombined_genes = 0
+        for g in allele.genes:
+            if g not in self.allele.genes and g not in self.other.genes:
+                recombined_genes += 1
+        assert recombined_genes >= 1
+
+    def test_make_returns_random_Allele_with_random_Genes(self):
+        allele = genes.Allele.make(3, 5)
+        assert type(allele) is genes.Allele
+        assert len(allele.genes) == 3
+        assert all(len(g.bases) == 5 for g in allele.genes)
+
+        results = set()
+        for _ in range(10):
+            results.add(genes.Allele.make(5, 10))
+        assert len(results) >= 8
+        assert len(set([a.name for a in results])) >= 8
+        assert len(set([tuple(a.genes) for a in results])) >= 8
+
+    def test_make_with_base_factory_sets_bases_with_correct_type(self):
+        float_factory = lambda: random()
+        allele = genes.Allele.make(3, 5, base_factory=float_factory)
+        assert all(type(b) is float for g in allele.genes for b in g.bases)
+        assert all(len(set(tuple(g.bases))) >= 4 for g in allele.genes)
+
+        float_factory = lambda mult: random()*mult
+        allele = genes.Allele.make(3, 5, base_factory=float_factory, factory_args=[-2])
+        assert all(-2 <= b <= 0 for g in allele.genes for b in g.bases)
+
+    def test_to_dict_and_from_dict_e2e(self):
+        encoded = self.allele.to_dict()
+        assert type(encoded) is dict
+        decoded = genes.Allele.from_dict(encoded)
+        assert decoded == self.allele
+        assert decoded is not self.allele
+
+        float_factory = lambda: random()
+        allele = genes.Allele.make(3, 5, base_factory=float_factory)
+        encoded = allele.to_dict()
+        assert type(encoded) is dict
+        decoded = genes.Allele.from_dict(encoded)
+        assert decoded == allele
+        assert decoded is not allele
+
+        str_factory = lambda: genes.random_str(5)
+        allele = genes.Allele.make(3, 5, base_factory=str_factory)
+        encoded = allele.to_dict()
+        assert type(encoded) is dict
+        decoded = genes.Allele.from_dict(encoded)
+        assert decoded == allele
+        assert decoded is not allele
 
 
 if __name__ == '__main__':
