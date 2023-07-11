@@ -15,7 +15,7 @@ alphanumerics = [
 
 def random_str(size: int) -> str:
     """Returns a str of random alphanumeric chars."""
-    l = len(alphanumerics)
+    l = len(alphanumerics)-1
     return "".join([
         alphanumerics[randint(0, l)] for _ in range(size)
     ])
@@ -53,7 +53,8 @@ class Gene:
         self.bases.append(base)
         return self
 
-    def insert_sequence(self, index: int = None, sequence: list[int|float|str] = None) -> Gene:
+    def insert_sequence(self, index: int = None,
+                        sequence: list[int|float|str] = None) -> Gene:
         """Inserts the sequence at the index. If index is None, the
             sequence is inserted at a random index. If sequence is None,
             a random sequence in size between 1 and the current len of
@@ -122,8 +123,10 @@ class Gene:
         tert(indices is None or type(indices) is list,
              "indices must be list[int] or None")
         if type(indices) is list:
-            tert(all(type(i) is int for i in indices))
-            vert(len(indices) <= max_size, f"can have at most {max_size} indices")
+            tert(all(type(i) is int for i in indices),
+                 "indices must be list[int] or None")
+            vert(len(indices) <= max_size,
+                 f"can have at most {max_size} indices")
         else:
             swaps = randint(0, max_swaps)
             indices = list(set([randint(0, max_size-1) for _ in range(swaps)]))
@@ -148,6 +151,7 @@ class Gene:
              base_factory: Callable[[None], int|float|str] = None,
              factory_args: list = [], factory_kwargs: dict = {},
              name: str = None) -> Gene:
+        """Makes and returns a randomized Gene."""
         if base_factory is not None and callable(base_factory):
             bases = [
                 base_factory(*factory_args, **factory_kwargs)
@@ -160,12 +164,18 @@ class Gene:
         return cls(bases=bases)
 
     def to_dict(self) -> dict:
+        """Serialize the Gene to a dict."""
         return {self.name: [*self.bases]}
 
     @classmethod
     def from_dict(cls, data: dict) -> Gene:
-        for name, bases in data.iter():
+        """Deserialize a Gene from a dict."""
+        for name, bases in data.items():
             return cls(name=name, bases=bases)
+
+    def __hash__(self) -> int:
+        """Make Gene hashable."""
+        return hash((self.name, tuple(self.bases)))
 
 
 @dataclass
@@ -173,7 +183,7 @@ class Allele:
     name: str = field(default_factory=lambda: random_str(3))
     genes: list[Gene] = field(default_factory=list)
 
-    def add_gene(self, gene: Gene = None):
+    def add_gene(self, gene: Gene):
         ...
 
     @classmethod
