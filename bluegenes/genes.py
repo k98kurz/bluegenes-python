@@ -612,8 +612,8 @@ class Genome:
                base_factory: Callable[[None], int|float|str] = None,
                factory_args: list = [], factory_kwargs: dict = {}) -> Genome:
         """Adds a chromosome to the end of the genome. If chromosome is
-            None, adds a random Chromosome using Chromosome.make and passing kwargs.
-            Returns self for chaining operations.
+            None, adds a random Chromosome using Chromosome.make and
+            passing kwargs. Returns self for chaining operations.
         """
         return self.insert(
             len(self.chromosomes), chromosome, n_alleles=n_alleles,
