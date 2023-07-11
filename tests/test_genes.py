@@ -842,7 +842,7 @@ class TestGnome(unittest.TestCase):
         assert self.genome.chromosomes[0].name == "diff"
 
         indices = set()
-        for _ in range(5):
+        for _ in range(10):
             genome = self.first_genome().append(self.alt_chromosome("fizz"))
             genome.delete()
             if genome.chromosomes[0].name != "test":
