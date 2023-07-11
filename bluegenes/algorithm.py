@@ -1,10 +1,12 @@
+from .errors import tert
 from .genes import Gene, Allele, Chromosome, Genome
 from random import choices
 from typing import Any, Callable
 
 
-def optimize_gene(measure_fitness: Callable[[Gene], int|float],
+def optimize_gene(measure_fitness: Callable[[Gene, int|float], int|float],
                   mutate_gene: Callable[[Gene], Gene],
+                  initial_population: list[Gene] = None,
                   population_size: int = 100, gene_size: int = 10,
                   fitness_target: int|float = 1.0, max_iterations: int = 1000,
                   base_factory: Callable[[Any], int|float|str] = None,
@@ -21,20 +23,23 @@ def optimize_gene(measure_fitness: Callable[[Gene], int|float],
         gene_name to assign the name to each Gene in the population.
         Returns the number of iterations and the final population.
     """
+    tert(initial_population is None or all(type(p) is Gene for p in initial_population),
+         "initial_population must be None or list[Gene]")
     population = [
         Gene.make(
             gene_size, base_factory=base_factory, factory_args=factory_args,
             factory_kwargs=factory_kwargs, name=gene_name
         )
         for _ in range(population_size)
-    ]
+    ] if initial_population is None else initial_population
 
     count = 0
-    fitness_scores: tuple[int|float, Gene] = [
-        (measure_fitness(g), g)
+    fitness_scores: list[tuple[int|float, Gene]] = [
+        (measure_fitness(g, fitness_target), g)
         for g in population
     ]
-    fitness_scores.sort(lambda fs: fs[0])
+    fitness_scores.sort(key=lambda fs: fs[0])
+    fitness_scores.reverse()
     best_fitness = fitness_scores[0][0]
 
     while count < max_iterations and best_fitness < fitness_target:
@@ -47,11 +52,12 @@ def optimize_gene(measure_fitness: Callable[[Gene], int|float],
 
         children = [mutate_gene(child) for child in children]
         population = [*children, *parents]
-        fitness_scores: tuple[int|float, Gene] = [
-            (measure_fitness(g), g)
+        fitness_scores: list[tuple[int|float, Gene]] = [
+            (measure_fitness(g, fitness_target), g)
             for g in population
         ]
-        fitness_scores.sort(lambda fs: fs[0])
+        fitness_scores.sort(key=lambda fs: fs[0])
+        fitness_scores.reverse()
         best_fitness = fitness_scores[0][0]
         count += 1
 
