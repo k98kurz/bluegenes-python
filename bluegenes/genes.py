@@ -1,6 +1,7 @@
 from __future__ import annotations
 from .errors import tert, typert, vert
 from dataclasses import dataclass, field
+from math import ceil, log
 from random import randint
 
 
@@ -108,12 +109,38 @@ class Gene:
         self.bases[index] = base
         return self
 
-    def recombine(self, other: Gene, indexes: list[int] = None) -> Gene:
+    def recombine(self, other: Gene, indices: list[int] = None) -> Gene:
         """Recombines with another gene at the given indexes. If indices
             is None, between 1 and ceil(log(len(self.bases))) random
             indices will be chosen. Returns the resultant Gene.
         """
-        ...
+        typert(other, Gene, "other")
+        vert(len(other.bases) > 0, "other must have bases")
+        max_size = min(len(self.bases), len(other.bases))
+        max_swaps = ceil(log(max_size)) or 1
+        tert(indices is None or type(indices) is list,
+             "indices must be list[int] or None")
+        if type(indices) is list:
+            tert(all(type(i) is int for i in indices))
+            vert(len(indices) <= max_size, f"can have at most {max_size} indices")
+        else:
+            swaps = randint(0, max_swaps)
+            indices = list(set([randint(0, max_size-1) for _ in range(swaps)]))
+            indices.sort()
+
+        name = self.name
+        if self.name != other.name:
+            name_size = min(len(self.name), len(other.name))
+            name_swap = randint(1, name_size-1)
+            name = self.name[:name_swap] + other.name[name_swap:]
+
+        bases = [*self.bases]
+        swapped = False
+        for i in indices:
+            bases[i:] = self.bases[i:] if swapped else other.bases[i:]
+            swapped = not swapped
+
+        return Gene(name=name, bases=bases)
 
     @classmethod
     def make(cls, n_bases: int, max_base_size: int = 10, name: str = None) -> Gene:
