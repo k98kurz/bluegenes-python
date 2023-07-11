@@ -3,6 +3,7 @@ from .errors import tert, typert, vert
 from dataclasses import dataclass, field
 from math import ceil, log
 from random import randint
+from typing import Callable
 
 
 alphanumerics = [
@@ -143,8 +144,17 @@ class Gene:
         return Gene(name=name, bases=bases)
 
     @classmethod
-    def make(cls, n_bases: int, max_base_size: int = 10, name: str = None) -> Gene:
-        bases = [randint(0, max_base_size) for _ in range(n_bases)]
+    def make(cls, n_bases: int, max_base_size: int = 10,
+             base_factory: Callable[[None], int|float|str] = None,
+             factory_args: list = [], factory_kwargs: dict = {},
+             name: str = None) -> Gene:
+        if base_factory is not None and callable(base_factory):
+            bases = [
+                base_factory(*factory_args, **factory_kwargs)
+                for _ in range(n_bases)
+            ]
+        else:
+            bases = [randint(0, max_base_size) for _ in range(n_bases)]
         if name:
             return cls(name=name, bases=bases)
         return cls(bases=bases)
