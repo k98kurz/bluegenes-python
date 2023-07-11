@@ -1,9 +1,9 @@
-from context import genes, algorithm
+from context import genes, optimization
 from random import random
 import unittest
 
 
-class TestAlgorithmForGenes(unittest.TestCase):
+class TestOptimizationForGenes(unittest.TestCase):
     def population(self) -> list[genes.Gene]:
         return [
             genes.Gene("test", [1.0, 2.0, 3.0, 4.0]),
@@ -17,7 +17,7 @@ class TestAlgorithmForGenes(unittest.TestCase):
         return super().setUp()
 
     def test_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.child_from_parents(self.parents)
+        child = optimization.child_from_parents(self.parents)
 
         parent_bases = {
             i: self.parents[i].bases
@@ -49,7 +49,7 @@ class TestAlgorithmForGenes(unittest.TestCase):
                     gene.bases[i] -= random()
             return gene
 
-        count, population = algorithm.optimize_gene(
+        count, population = optimization.optimize_gene(
             measure_fitness=measure_fitness,
             mutate_gene=mutate_gene,
             initial_population=self.population(),
@@ -67,7 +67,7 @@ class TestAlgorithmForGenes(unittest.TestCase):
         assert count < 1000 or (best[0] - target)/target < 0.01
 
 
-class TestAlgorithmForAlleles(unittest.TestCase):
+class TestOptimizationForAlleles(unittest.TestCase):
     def population(self) -> list[genes.Allele]:
         return [
             genes.Allele("test", [
@@ -93,7 +93,7 @@ class TestAlgorithmForAlleles(unittest.TestCase):
         return super().setUp()
 
     def test_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.child_from_parents(self.parents)
+        child = optimization.child_from_parents(self.parents)
 
         parent_genes = {
             i: self.parents[i].genes
@@ -135,7 +135,7 @@ class TestAlgorithmForAlleles(unittest.TestCase):
             allele.genes = [mutate_gene(g) for g in allele.genes]
             return allele
 
-        count, population = algorithm.optimize_allele(
+        count, population = optimization.optimize_allele(
             measure_fitness=measure_fitness,
             mutate_allele=mutate_allele,
             initial_population=self.population(),
@@ -154,7 +154,7 @@ class TestAlgorithmForAlleles(unittest.TestCase):
         assert count < 1000 or (best[0] - target)/target < 0.01
 
 
-class TestAlgorithmForChromosomes(unittest.TestCase):
+class TestOptimizationForChromosomes(unittest.TestCase):
     def population(self) -> list[genes.Chromosome]:
         return [
             genes.Chromosome("test", [
@@ -204,7 +204,7 @@ class TestAlgorithmForChromosomes(unittest.TestCase):
         return super().setUp()
 
     def test_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.child_from_parents(self.parents)
+        child = optimization.child_from_parents(self.parents)
 
         parent_alleles = {
             i: self.parents[i].alleles
@@ -255,7 +255,7 @@ class TestAlgorithmForChromosomes(unittest.TestCase):
             chromosome.alleles = [mutate_allele(a) for a in chromosome.alleles]
             return chromosome
 
-        count, population = algorithm.optimize_chromosome(
+        count, population = optimization.optimize_chromosome(
             measure_fitness=measure_fitness,
             mutate_chromosome=mutate_chromosome,
             initial_population=self.population(),
@@ -274,7 +274,7 @@ class TestAlgorithmForChromosomes(unittest.TestCase):
         assert count < 1000 or (best[0] - target)/target < 0.01
 
 
-class TestAlgorithmForGenome(unittest.TestCase):
+class TestOptimizationForGenome(unittest.TestCase):
     def population(self) -> list[genes.Genome]:
         return [
             genes.Genome("test", [
@@ -332,7 +332,7 @@ class TestAlgorithmForGenome(unittest.TestCase):
         return super().setUp()
 
     def test_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.child_from_parents(self.parents)
+        child = optimization.child_from_parents(self.parents)
 
         parent_chromosomes = {
             i: self.parents[i].chromosomes
@@ -397,7 +397,7 @@ class TestAlgorithmForGenome(unittest.TestCase):
             genome.chromosomes = [mutate_chromosome(c) for c in genome.chromosomes]
             return genome
 
-        count, population = algorithm.optimize_genome(
+        count, population = optimization.optimize_genome(
             measure_fitness=measure_fitness,
             mutate_genome=mutate_genome,
             initial_population=self.population(),
