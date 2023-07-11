@@ -200,10 +200,11 @@ class Allele:
         """
         index = index if index is not None else randint(0, len(self.genes)-1)
         typert(index, int, "index")
-        vert(index < len(self.genes), "index out of range")
+        vert(0 <= index <= len(self.genes), "index out of range")
 
         if gene is None:
-            n_bases = n_bases or randint(0, max(len(g.bases) for g in self.genes))
+            if n_bases is None:
+                n_bases = randint(0, max(len(g.bases) for g in self.genes))
             typert(n_bases, int, "n_bases")
             gene = Gene.make(
                 n_bases, max_base_size, base_factory, factory_args,
@@ -328,7 +329,7 @@ class Allele:
         """Makes and returns an Allele of randomized Genes."""
         genes = [
             Gene.make(
-                n_bases=n_bases, max_base_size=max_base_size,
+                n_bases, max_base_size=max_base_size,
                 base_factory=base_factory, factory_args=factory_args,
                 factory_kwargs=factory_kwargs
             )
@@ -360,6 +361,198 @@ class Allele:
 class Chromosome:
     name: str = field(default_factory=lambda: random_str(2))
     alleles: list[Allele] = field(default_factory=list)
+
+    def copy(self) -> Chromosome:
+        """Returns an exact copy of the Chromosome, copying the
+            underlying Alleles as well.
+        """
+        return Chromosome(name=self.name, alleles=[a.copy() for a in self.alleles])
+
+    def insert(self, index: int = None, allele: Allele = None, *,
+               n_genes: int = None, n_bases: int = None, max_base_size: int = 10,
+               base_factory: Callable[[None], int|float|str] = None,
+               factory_args: list = [], factory_kwargs: dict = {}) -> Chromosome:
+        """Inserts the allele at the index. If index is None, the allele
+            is inserted at a random index. If allele is None, adds a
+            random allele using Allele.make, passing the kwargs. Returns
+            self for chaining operations.
+        """
+        index = index if index is not None else randint(0, len(self.alleles)-1)
+        typert(index, int, "index")
+        vert(0 <= index <= len(self.alleles), "index out of range")
+
+        if allele is None:
+            if n_genes is None:
+                n_genes = randint(0, max(len(a.genes) for a in self.alleles))
+            if n_bases is None:
+                n_bases = randint(0, max(len(g.bases) for a in self.alleles for g in a.genes))
+            typert(n_genes, int, "n_genes")
+            typert(n_bases, int, "n_bases")
+            allele = Allele.make(
+                n_genes, n_bases, max_base_size=max_base_size,
+                base_factory=base_factory, factory_args=factory_args,
+                factory_kwargs=factory_kwargs
+            )
+        typert(allele, Allele, "allele")
+
+        self.alleles.insert(index, allele)
+        return self
+
+    def append(self, allele: Allele = None, *, n_genes: int = None,
+               n_bases: int = None, max_base_size: int = 10,
+               base_factory: Callable[[None], int|float|str] = None,
+               factory_args: list = [], factory_kwargs: dict = {}) -> Chromosome:
+        """Adds a allele to the end of the chromosome. If allele is None,
+            adds a random Allele using Allele.make and passing kwargs.
+            Returns self for chaining operations.
+        """
+        return self.insert(
+            len(self.alleles), allele, n_genes=n_genes, n_bases=n_bases,
+            max_base_size=max_base_size, base_factory=base_factory,
+            factory_args=factory_args, factory_kwargs=factory_kwargs
+        )
+
+    def duplicate(self, index: int = None) -> Chromosome:
+        """Duplicates the Allele at the index. If index is None, the
+            Allele at a random index is duplicated. Returns self for
+            chaining operations.
+        """
+        index = index if index is not None else randint(0, len(self.alleles)-1)
+        typert(index, int, "index")
+        vert(0 <= index < len(self.alleles), "index out of range")
+        return self.insert(index, self.alleles[index].copy())
+
+    def delete(self, index: int = None) -> Chromosome:
+        """Deletes the Allele at the index. If index is None, an Allele
+            is deleted at a random index. Returns self for chaining
+            operations.
+        """
+        index = index if index is not None else randint(0, len(self.alleles)-1)
+        del self.alleles[index]
+        return self
+
+    def substitute(self, index: int = None, allele: Allele = None, *,
+                   n_genes: int = None, n_bases: int = None,
+                   max_base_size: int = 10,
+                   base_factory: Callable[[None], int|float|str] = None,
+                   factory_args: list = [], factory_kwargs: dict = {}) -> Chromosome:
+        """Substitutes the Gene at the index with the given allele. If
+            index is None, a random index will be used. If allele is None,
+            adds a random allele using Allele.make, passing the kwargs.
+            Returns self for chaining operations.
+        """
+        index = index if index is not None else randint(0, len(self.alleles)-1)
+        typert(index, int, "index")
+        vert(index < len(self.alleles), "index out of range")
+
+        if allele is None:
+            if n_genes is None:
+                n_genes = randint(0, max(len(a.genes) for a in self.alleles))
+            if n_bases is None:
+                n_bases = randint(0, max(len(g.bases) for a in self.alleles for g in a.genes))
+            typert(n_genes, int, "n_genes")
+            typert(n_bases, int, "n_bases")
+            allele = Allele.make(
+                n_genes, n_bases, max_base_size=max_base_size,
+                base_factory=base_factory, factory_args=factory_args,
+                factory_kwargs=factory_kwargs
+            )
+        typert(allele, Allele, "allele")
+
+        self.alleles[index] = allele
+        return self
+
+    def recombine(self, other: Chromosome, indices: list[int] = None,
+                  recombine_alleles: bool = True, match_alleles: bool = True,
+                  recombine_genes: bool = True, match_genes: bool = True
+                  ) -> Chromosome:
+        """Recombines with the other Chromosome, swapping at the given
+            indices. If indices is None, between 1 and ceil(log(len(self.alleles)))
+            random indices will be chosen. Recombines individual Alleles
+            if recombine_allels is True. Recombines only Alleles with
+            matching names if match_alleles is True. Recombines
+            individual Genes if recombine_genes is True. Recombines only
+            Genes with matching names if match_genes is True. Returns
+            the new Chromosome.
+        """
+        typert(other, Chromosome, "other")
+        vert(len(other.alleles) > 0, "other must have alleles")
+        max_size = min(len(self.alleles), len(other.alleles))
+        max_swaps = ceil(log(max_size)) or 1
+        tert(indices is None or type(indices) is list,
+             "indices must be list[int] or None")
+        if type(indices) is list:
+            tert(all(type(i) is int for i in indices),
+                 "indices must be list[int] or None")
+            vert(len(indices) <= max_size,
+                 f"can have at most {max_size} indices")
+        else:
+            swaps = randint(0, max_swaps)
+            indices = list(set([randint(0, max_size-1) for _ in range(swaps)]))
+            indices.sort()
+
+        name = self.name
+        if self.name != other.name:
+            name_size = min(len(self.name), len(other.name))
+            name_swap = randint(1, name_size-1)
+            name = self.name[:name_swap] + other.name[name_swap:]
+
+        alleles = [*self.alleles]
+        other_alleles = [*other.alleles]
+        swapped = False
+        for i in indices:
+            alleles[i:] = self.alleles[i:] if swapped else other.alleles[i:]
+            other_alleles[i:] = other.alleles[i:] if swapped else self.alleles[i:]
+        alleles = [g.copy() for g in alleles]
+        other_alleles = [g.copy() for g in other_alleles]
+
+        if recombine_alleles:
+            for i in range(max_size):
+                if alleles[i].name == other_alleles[i].name or not match_alleles:
+                    alleles[i] = alleles[i].recombine(
+                        other_alleles[i],
+                        recombine_genes=recombine_genes,
+                        match_genes=match_genes
+                    )
+
+        return Chromosome(name=name, alleles=alleles)
+
+    @classmethod
+    def make(cls, n_alleles: int, n_genes: int, n_bases: int, name: str = None,
+             *, max_base_size: int = 10,
+             base_factory: Callable[[None], int|float|str] = None,
+             factory_args: list = [], factory_kwargs: dict = {}) -> Chromosome:
+        """Makes and returns a Chromosome of randomized Alleles."""
+        alleles = [
+            Allele.make(
+                n_genes, n_bases, max_base_size=max_base_size,
+                base_factory=base_factory, factory_args=factory_args,
+                factory_kwargs=factory_kwargs
+            )
+            for _ in range(n_alleles)
+        ]
+        if name:
+            return cls(name=name, alleles=alleles)
+        return cls(alleles=alleles)
+
+    def to_dict(self) -> dict:
+        """Serialize the Allele to a dict."""
+        return {
+            self.name: [allele.to_dict() for allele in self.alleles],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Chromosome:
+        """Deserialize an Allele from a dict."""
+        for name, alleles in data.items():
+            unpacked = [Allele.from_dict(d) for d in alleles]
+            return cls(name=name, alleles=unpacked)
+
+    def __hash__(self) -> int:
+        """Make Allele hashable."""
+        return hash((self.name, hash(tuple(self.alleles))))
+
+
 
 
 @dataclass
