@@ -92,6 +92,7 @@ def _optimize(
     population = [fs[1] for fs in fitness_scores]
     return (count, population)
 
+
 def optimize_gene(measure_fitness: Callable[[Gene, int|float], int|float],
                   mutate_gene: Callable[[Gene], Gene],
                   initial_population: list[Gene] = None,
@@ -111,55 +112,12 @@ def optimize_gene(measure_fitness: Callable[[Gene, int|float], int|float],
         gene_name to assign the name to each Gene in the population.
         Returns the number of iterations and the final population.
     """
-    tert(initial_population is None or all(type(p) is Gene for p in initial_population),
-         "initial_population must be None or list[Gene]")
-    population = [
-        Gene.make(
-            gene_size, base_factory=base_factory, factory_args=factory_args,
-            factory_kwargs=factory_kwargs, name=gene_name
-        )
-        for _ in range(population_size)
-    ] if initial_population is None else initial_population
-
-    count = 0
-    fitness_scores: list[tuple[int|float, Gene]] = [
-        (measure_fitness(g, fitness_target), g)
-        for g in population
-    ]
-    fitness_scores.sort(key=lambda fs: fs[0])
-    fitness_scores.reverse()
-    best_fitness = fitness_scores[0][0]
-
-    while count < max_iterations and best_fitness < fitness_target:
-        # breed parents at random proportional to their order by score
-        parents = [fs[1] for fs in fitness_scores[:parents_per_generation]]
-        children = [
-            gene_child_from_parents(parents)
-            for _ in range(population_size-len(parents))
-        ]
-
-        children = [mutate_gene(child) for child in children]
-        population = [*children, *parents]
-        fitness_scores: list[tuple[int|float, Gene]] = [
-            (measure_fitness(g, fitness_target), g)
-            for g in population
-        ]
-        fitness_scores.sort(key=lambda fs: fs[0])
-        fitness_scores.reverse()
-        best_fitness = fitness_scores[0][0]
-        count += 1
-
-    population = [fs[1] for fs in fitness_scores]
-    return (count, population)
-
-def gene_child_from_parents(parents: list[Gene]) -> Gene:
-    """Select two parents at random semi-proportional to their order in
-        the list. Recombine the two chosen parent Genes, and return the
-        result.
-    """
-    weights = [len(parents[i:])/len(parents) for i in range(len(parents))]
-    dad, mom = choices(parents, weights, k=2)
-    return dad.recombine(mom)
+    return _optimize(
+        Gene, measure_fitness, mutate_gene, initial_population,
+        population_size, None, None, None, gene_size, fitness_target,
+        max_iterations, base_factory, factory_args, factory_kwargs, gene_name,
+        parents_per_generation
+    )
 
 
 def optimize_allele(measure_fitness: Callable[[Allele, int|float], int|float],
@@ -186,56 +144,12 @@ def optimize_allele(measure_fitness: Callable[[Allele, int|float], int|float],
         population. Returns the number of iterations and the final
         population.
     """
-    tert(initial_population is None or all(type(p) is Allele for p in initial_population),
-         "initial_population must be None or list[Allele]")
-    population = [
-        Allele.make(
-            allele_size, gene_size, base_factory=base_factory,
-            factory_args=factory_args, factory_kwargs=factory_kwargs,
-            name=allele_name
-        )
-        for _ in range(population_size)
-    ] if initial_population is None else initial_population
-
-    count = 0
-    fitness_scores: list[tuple[int|float, Gene]] = [
-        (measure_fitness(g, fitness_target), g)
-        for g in population
-    ]
-    fitness_scores.sort(key=lambda fs: fs[0])
-    fitness_scores.reverse()
-    best_fitness = fitness_scores[0][0]
-
-    while count < max_iterations and best_fitness < fitness_target:
-        # breed parents at random proportional to their order by score
-        parents = [fs[1] for fs in fitness_scores[:parents_per_generation]]
-        children = [
-            allele_child_from_parents(parents)
-            for _ in range(population_size-len(parents))
-        ]
-
-        children = [mutate_allele(child) for child in children]
-        population = [*children, *parents]
-        fitness_scores: list[tuple[int|float, Gene]] = [
-            (measure_fitness(g, fitness_target), g)
-            for g in population
-        ]
-        fitness_scores.sort(key=lambda fs: fs[0])
-        fitness_scores.reverse()
-        best_fitness = fitness_scores[0][0]
-        count += 1
-
-    population = [fs[1] for fs in fitness_scores]
-    return (count, population)
-
-def allele_child_from_parents(parents: list[Allele]) -> Allele:
-    """Select two parents at random semi-proportional to their order in
-        the list. Recombine the two chosen parent Genes, and return the
-        result.
-    """
-    weights = [len(parents[i:])/len(parents) for i in range(len(parents))]
-    dad, mom = choices(parents, weights, k=2)
-    return dad.recombine(mom)
+    return _optimize(
+        Allele, measure_fitness, mutate_allele, initial_population,
+        population_size, None, None, allele_size, gene_size,
+        fitness_target, max_iterations, base_factory, factory_args,
+        factory_kwargs, allele_name, parents_per_generation
+    )
 
 
 def optimize_chromosome(
@@ -262,56 +176,12 @@ def optimize_chromosome(
         population. Returns the number of iterations and the final
         population.
     """
-    tert(initial_population is None or all(type(p) is Chromosome for p in initial_population),
-         "initial_population must be None or list[Chromosome]")
-    population = [
-        Chromosome.make(
-            chromosome_size, allele_size, gene_size, base_factory=base_factory,
-            factory_args=factory_args, factory_kwargs=factory_kwargs,
-            name=chromosome_name
-        )
-        for _ in range(population_size)
-    ] if initial_population is None else initial_population
-
-    count = 0
-    fitness_scores: list[tuple[int|float, Gene]] = [
-        (measure_fitness(g, fitness_target), g)
-        for g in population
-    ]
-    fitness_scores.sort(key=lambda fs: fs[0])
-    fitness_scores.reverse()
-    best_fitness = fitness_scores[0][0]
-
-    while count < max_iterations and best_fitness < fitness_target:
-        # breed parents at random proportional to their order by score
-        parents = [fs[1] for fs in fitness_scores[:parents_per_generation]]
-        children = [
-            chromosome_child_from_parents(parents)
-            for _ in range(population_size-len(parents))
-        ]
-
-        children = [mutate_chromosome(child) for child in children]
-        population = [*children, *parents]
-        fitness_scores: list[tuple[int|float, Gene]] = [
-            (measure_fitness(g, fitness_target), g)
-            for g in population
-        ]
-        fitness_scores.sort(key=lambda fs: fs[0])
-        fitness_scores.reverse()
-        best_fitness = fitness_scores[0][0]
-        count += 1
-
-    population = [fs[1] for fs in fitness_scores]
-    return (count, population)
-
-def chromosome_child_from_parents(parents: list[Chromosome]) -> Chromosome:
-    """Select two parents at random semi-proportional to their order in
-        the list. Recombine the two chosen parent Genes, and return the
-        result.
-    """
-    weights = [len(parents[i:])/len(parents) for i in range(len(parents))]
-    dad, mom = choices(parents, weights, k=2)
-    return dad.recombine(mom)
+    return _optimize(
+        Chromosome, measure_fitness, mutate_chromosome, initial_population,
+        population_size, None, chromosome_size, allele_size, gene_size,
+        fitness_target, max_iterations, base_factory, factory_args,
+        factory_kwargs, chromosome_name, parents_per_generation
+    )
 
 
 def optimize_genome(
@@ -345,6 +215,7 @@ def optimize_genome(
         fitness_target, max_iterations, base_factory, factory_args,
         factory_kwargs, genome_name, parents_per_generation
     )
+
 
 def child_from_parents(parents: list[Genome]) -> Genome:
     """Select two parents at random semi-proportional to their order in

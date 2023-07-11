@@ -16,8 +16,8 @@ class TestAlgorithmForGenes(unittest.TestCase):
         self.parents = self.population()
         return super().setUp()
 
-    def test_gene_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.gene_child_from_parents(self.parents)
+    def test_child_from_parents_returns_recombination_of_two_random_parents(self):
+        child = algorithm.child_from_parents(self.parents)
 
         parent_bases = {
             i: self.parents[i].bases
@@ -92,8 +92,8 @@ class TestAlgorithmForAlleles(unittest.TestCase):
         self.parents = self.population()
         return super().setUp()
 
-    def test_allele_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.allele_child_from_parents(self.parents)
+    def test_child_from_parents_returns_recombination_of_two_random_parents(self):
+        child = algorithm.child_from_parents(self.parents)
 
         parent_genes = {
             i: self.parents[i].genes
@@ -203,8 +203,8 @@ class TestAlgorithmForChromosomes(unittest.TestCase):
         self.parents = self.population()
         return super().setUp()
 
-    def test_chromosome_child_from_parents_returns_recombination_of_two_random_parents(self):
-        child = algorithm.chromosome_child_from_parents(self.parents)
+    def test_child_from_parents_returns_recombination_of_two_random_parents(self):
+        child = algorithm.child_from_parents(self.parents)
 
         parent_alleles = {
             i: self.parents[i].alleles
