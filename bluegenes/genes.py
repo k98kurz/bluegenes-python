@@ -766,18 +766,18 @@ class Genome:
         return cls(chromosomes=chromosomes)
 
     def to_dict(self) -> dict:
-        """Serialize the Gnome to a dict."""
+        """Serialize the Genome to a dict."""
         return {
             self.name: [chromosome.to_dict() for chromosome in self.chromosomes],
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> Genome:
-        """Deserialize a Gnome from a dict."""
+        """Deserialize a Genome from a dict."""
         for name, chromosomes in data.items():
             unpacked = [Chromosome.from_dict(c) for c in chromosomes]
             return cls(name=name, chromosomes=unpacked)
 
     def __hash__(self) -> int:
-        """Make Gnome hashable."""
+        """Make Genome hashable."""
         return hash((self.name, tuple(self.chromosomes)))
