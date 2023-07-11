@@ -166,6 +166,7 @@ class TestAllele(unittest.TestCase):
             genes.Gene("g1", [1, 2, 3]),
             genes.Gene("g2", [4, 5, 6]),
             genes.Gene("g3", [7, 8, 9]),
+            genes.Gene("g4", [-7, -8, -9]),
         ])
 
     def alt_allele(self) -> genes.Allele:
@@ -173,6 +174,7 @@ class TestAllele(unittest.TestCase):
             genes.Gene("g1", [10, 11, 12]),
             genes.Gene("g2", [13, 14, 15]),
             genes.Gene("g3", [16, 17, 18]),
+            genes.Gene("g4", [-16, -17, -18]),
         ])
 
     def second_allele(self) -> genes.Allele:
@@ -180,6 +182,7 @@ class TestAllele(unittest.TestCase):
             genes.Gene("g4", [10, 11, 12]),
             genes.Gene("g5", [13, 14, 15]),
             genes.Gene("g6", [16, 17, 18]),
+            genes.Gene("g6", [116, 117, 118]),
         ])
 
     def first_gene(self) -> genes.Gene:
@@ -226,7 +229,7 @@ class TestAllele(unittest.TestCase):
         assert len(indices) > 1
 
         gs = set()
-        for _ in range(5):
+        for _ in range(10):
             allele = self.first_allele()
             allele.insert(0)
             gs.add(allele.genes[0])
@@ -256,11 +259,12 @@ class TestAllele(unittest.TestCase):
         assert len(indices) >= 2
 
     def test_delete_deletes_Gene_at_specified_or_random_index(self):
-        assert len(self.allele.genes) == 3
+        assert len(self.allele.genes) == 4
         self.allele.delete(0)
-        assert len(self.allele.genes) == 2
+        assert len(self.allele.genes) == 3
         assert self.allele.genes[0].name == "g2"
         assert self.allele.genes[1].name == "g3"
+        assert self.allele.genes[2].name == "g4"
 
         indices = set()
         for _ in range(10):
@@ -270,8 +274,10 @@ class TestAllele(unittest.TestCase):
                 indices.add(0)
             elif allele.genes[1].name != "g2":
                 indices.add(1)
-            else:
+            elif allele.genes[2].name != "g3":
                 indices.add(2)
+            else:
+                indices.add(3)
         assert len(indices) >= 2
 
     def test_substitute_replaces_Gene_with_specified_or_random_Gene_at_specified_or_random_index(self):
@@ -297,7 +303,7 @@ class TestAllele(unittest.TestCase):
         assert al3.genes == [self.allele.genes[0], *self.other.genes[1:]]
 
         swapset = set()
-        for _ in range(5):
+        for _ in range(10):
             al1 = self.first_allele()
             al2 = self.second_allele()
             al3 = al1.recombine(al2, recombine_genes=False)
@@ -317,7 +323,7 @@ class TestAllele(unittest.TestCase):
         allele = self.allele.recombine(self.alternate, [1])
         recombined_genes = 0
         allele_bases = [b for g in self.allele.genes for b in g.bases]
-        other_bases = [b for g in self.other.genes for b in g.bases]
+        other_bases = [b for g in self.alternate.genes for b in g.bases]
         for g in allele.genes:
             if g not in self.allele.genes and g not in self.alternate.genes:
                 recombined_genes += 1
@@ -399,6 +405,7 @@ class TestChromosome(unittest.TestCase):
             genes.Gene("g1", [1, 2, 3]),
             genes.Gene("g2", [4, 5, 6]),
             genes.Gene("g3", [7, 8, 9]),
+            genes.Gene("g4", [-7, -8, -9]),
         ])
 
     def alt_allele(self, name: str = "test") -> genes.Allele:
@@ -406,6 +413,7 @@ class TestChromosome(unittest.TestCase):
             genes.Gene("g1", [10, 11, 12]),
             genes.Gene("g2", [13, 14, 15]),
             genes.Gene("g3", [16, 17, 18]),
+            genes.Gene("g4", [-16, -17, -18]),
         ])
 
     def second_allele(self) -> genes.Allele:
@@ -413,6 +421,7 @@ class TestChromosome(unittest.TestCase):
             genes.Gene("g4", [10, 11, 12]),
             genes.Gene("g5", [13, 14, 15]),
             genes.Gene("g6", [16, 17, 18]),
+            genes.Gene("g6", [116, 117, 118]),
         ])
 
     def third_allele(self) -> genes.Allele:
@@ -420,6 +429,7 @@ class TestChromosome(unittest.TestCase):
             genes.Gene("bz1", [20, 21, 22]),
             genes.Gene("bz2", [30, 31, 32]),
             genes.Gene("bz3", [40, 41, 42]),
+            genes.Gene("bz4", [140, 141, 142]),
         ])
 
     def first_chromosome(self) -> genes.Chromosome:
@@ -478,7 +488,7 @@ class TestChromosome(unittest.TestCase):
         assert len(indices) > 1
 
         gs = set()
-        for _ in range(5):
+        for _ in range(10):
             chromosome = self.first_chromosome()
             chromosome.insert(0)
             gs.add(chromosome.alleles[0])
@@ -514,7 +524,7 @@ class TestChromosome(unittest.TestCase):
         assert self.chromosome.alleles[0].name == "diff"
 
         indices = set()
-        for _ in range(5):
+        for _ in range(10):
             chromosome = self.first_chromosome().append(self.alt_allele("fizz"))
             chromosome.delete()
             if chromosome.alleles[0].name != "test":
@@ -533,7 +543,7 @@ class TestChromosome(unittest.TestCase):
 
         gs = set()
         indices = set()
-        for _ in range(10):
+        for _ in range(20):
             chromosome = self.first_chromosome()
             a_at_1 = chromosome.alleles[1]
             chromosome.substitute(1)
@@ -570,7 +580,7 @@ class TestChromosome(unittest.TestCase):
         main_genes = [g for a in self.chromosome.alleles for g in a.genes]
         main_gene_names = [g.name for g in main_genes]
         main_bases = [b for g in main_genes for b in g.bases]
-        other_genes = [b for g in self.other.alleles for b in g.genes]
+        other_genes = [b for g in self.alternate.alleles for b in g.genes]
         other_gene_names = [g.name for g in other_genes]
         other_bases = [b for g in other_genes for b in g.bases]
         recombined_alleles = 0
@@ -696,6 +706,7 @@ class TestGnome(unittest.TestCase):
             genes.Gene("g1", [1, 2, 3]),
             genes.Gene("g2", [4, 5, 6]),
             genes.Gene("g3", [7, 8, 9]),
+            genes.Gene("g4", [-7, -8, -9]),
         ])
 
     def alt_allele(self, name: str = "test") -> genes.Allele:
@@ -703,6 +714,7 @@ class TestGnome(unittest.TestCase):
             genes.Gene("g1", [10, 11, 12]),
             genes.Gene("g2", [13, 14, 15]),
             genes.Gene("g3", [16, 17, 18]),
+            genes.Gene("g4", [-16, -17, -18]),
         ])
 
     def second_allele(self) -> genes.Allele:
@@ -710,6 +722,7 @@ class TestGnome(unittest.TestCase):
             genes.Gene("g4", [10, 11, 12]),
             genes.Gene("g5", [13, 14, 15]),
             genes.Gene("g6", [16, 17, 18]),
+            genes.Gene("g6", [116, 117, 118]),
         ])
 
     def third_allele(self) -> genes.Allele:
@@ -717,13 +730,15 @@ class TestGnome(unittest.TestCase):
             genes.Gene("bz1", [20, 21, 22]),
             genes.Gene("bz2", [30, 31, 32]),
             genes.Gene("bz3", [40, 41, 42]),
+            genes.Gene("bz4", [140, 141, 142]),
         ])
 
     def fourth_allele(self) -> genes.Allele:
         return genes.Allele("buzz", [
-            genes.Gene("bz4", [120, 121, 122]),
-            genes.Gene("bz5", [130, 131, 132]),
-            genes.Gene("bz6", [140, 141, 142]),
+            genes.Gene("bz4", [220, 221, 222]),
+            genes.Gene("bz5", [230, 231, 232]),
+            genes.Gene("bz6", [240, 241, 242]),
+            genes.Gene("bz7", [250, 251, 252]),
         ])
 
     def first_chromosome(self) -> genes.Chromosome:
@@ -806,7 +821,7 @@ class TestGnome(unittest.TestCase):
         assert len(indices) > 1
 
         gs = set()
-        for _ in range(5):
+        for _ in range(10):
             genome = self.first_genome()
             genome.insert(0)
             gs.add(genome.chromosomes[0])
@@ -826,7 +841,7 @@ class TestGnome(unittest.TestCase):
         assert self.genome.chromosomes[0] is not self.genome.chromosomes[1]
 
         indices = set()
-        for _ in range(5):
+        for _ in range(10):
             genome = self.first_genome().append(self.alt_chromosome())
             genome.duplicate()
             for i in range(len(genome.chromosomes)):

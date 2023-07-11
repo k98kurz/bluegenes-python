@@ -5,9 +5,8 @@ genetic algorithms.
 
 ## Status
 
-- [ ] Start
 - [x] Models + tests
-- [ ] Algorithms + tests
+- [x] Optimization functions + tests
 - [ ] Decent documentation
 
 ## Logic Overview
@@ -27,8 +26,8 @@ python tests/test_genes.py
 Note that the randomness may cause some tests to occasionally fail. I halved the
 change of a random test failure every time one was encountered, but there are by
 definition no guarantees of deterministic behavior when working with random
-numbers. In other words, just run the test suite a few times. I'm aiming for <1%
-change of a random test failure.
+numbers. In other words, just run the test suite a few times. I have tuned it
+for <1% chance of a random test failure (measured).
 
 ## ISC License
 
