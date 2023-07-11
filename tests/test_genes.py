@@ -498,7 +498,7 @@ class TestChromosome(unittest.TestCase):
         assert self.chromosome.alleles[0] is not self.chromosome.alleles[1]
 
         indices = set()
-        for _ in range(5):
+        for _ in range(10):
             chromosome = self.first_chromosome().append(self.alt_allele())
             chromosome.duplicate()
             for i in range(len(chromosome.alleles)):
