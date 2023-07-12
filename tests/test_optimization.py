@@ -451,7 +451,7 @@ class TestOptimizationHookForGenes(unittest.TestCase):
 
         target = 123
         def measure_fitness(gene: genes.Gene):
-            return 1 / (1 + abs(sum(b for b in gene.bases) - target))
+            return 1 / (1 + abs(sum(gene.bases) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
             for i in range(len(gene.bases)):
