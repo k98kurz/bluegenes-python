@@ -1,5 +1,5 @@
 from context import genes, optimization
-from random import random
+from random import randint, random
 import unittest
 
 
@@ -274,7 +274,7 @@ class TestOptimizationForChromosomes(unittest.TestCase):
         assert count < 1000 or (best[0] - target)/target < 0.01
 
 
-class TestOptimizationForGenome(unittest.TestCase):
+class TestOptimizationForGenomes(unittest.TestCase):
     def population(self) -> list[genes.Genome]:
         return [
             genes.Genome("test", [
@@ -419,6 +419,55 @@ class TestOptimizationForGenome(unittest.TestCase):
         best = (sum(sums), population[0])
 
         assert count < 1000 or (best[0] - target)/target < 0.01
+
+
+class TestOptimizationHookForGenes(unittest.TestCase):
+    def setUp(self) -> None:
+        self.original_hook = optimization._hook
+        return super().setUp()
+
+    def tearDown(self) -> None:
+        optimization._hook = self.original_hook
+        return super().tearDown()
+
+    def test_set_hook_sets__hook(self):
+        def hook (count: int, population: list[tuple[int, genes.Gene]]) -> None:
+            print((count, population))
+
+        assert optimization._hook is None
+        optimization.set_hook(hook)
+        assert optimization._hook is hook
+
+    def test_hook_is_called_on_each_generation(self):
+        logs = []
+        def hook (count: int, population: list[tuple[int, genes.Gene]]) -> None:
+            logs.append((count, population))
+
+        def measure_fitness(gene: genes.Gene, target: int):
+            return 1 / (1 + abs(sum(b for b in gene.bases) - target))
+
+        def mutate_gene(gene: genes.Gene) -> genes.Gene:
+            for i in range(len(gene.bases)):
+                val = random()
+                if val <= 0.5:
+                    gene.bases[i] += randint(0, 10)
+                else:
+                    gene.bases[i] -= randint(0, 10)
+            return gene
+
+        optimization.set_hook(hook)
+        target = 123
+        count, population = optimization.optimize_gene(
+            measure_fitness, mutate_gene, fitness_target=target,
+            max_iterations=100
+        )
+
+        assert len(logs) == count
+        assert all([type(l) is tuple for l in logs])
+        assert all([type(l[0]) is int for l in logs])
+        assert all([type(l[1]) is list for l in logs])
+        assert all([type(fs[0]) is float for l in logs for fs in l[1]])
+        assert all([type(fs[1]) is genes.Gene for l in logs for fs in l[1]])
 
 
 if __name__ == '__main__':

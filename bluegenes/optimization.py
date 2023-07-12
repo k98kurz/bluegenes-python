@@ -6,6 +6,19 @@ from typing import Any, Callable
 
 T = Genome | Chromosome | Allele | Gene
 
+_hook = None
+
+
+def set_hook(func: Callable[[int, list[tuple[int|float, T]]], None]) -> None:
+    """Set a hook that will be called after every generation and passed
+        the current generation count and the population with fitness
+        scores.
+    """
+    tert(callable(func), "func must be Callable")
+    global _hook
+    _hook = func
+
+
 def _optimize(
         opt_type: type,
         measure_fitness: Callable[[T, int|float], int|float],
@@ -88,6 +101,9 @@ def _optimize(
         fitness_scores.reverse()
         best_fitness = fitness_scores[0][0]
         count += 1
+
+        if _hook:
+            _hook(count, fitness_scores)
 
     population = [fs[1] for fs in fitness_scores]
     return (count, population)
