@@ -301,4 +301,13 @@ int to customize generation of a random initial population, or supply
 initial_population list[Genome] to specify the initial population. Returns the
 number of iterations and the final population.
 
+### `set_hook(func: Callable):` 
+
+Set a hook that will be called after every generation and passed the current
+generation count and the population with fitness scores.
+
+### `unset_hook():` 
+
+Unsets the hook.
+
 

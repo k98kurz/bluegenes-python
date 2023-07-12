@@ -58,15 +58,23 @@ genetic classes as the basis for an artificial life simulation. Below is a
 trivial example of how to do the first of these three.
 
 ```python
-from bluegenes import Gene, optimize_gene
+from bluegenes import Gene, optimize_gene, set_hook
 from random import randint, random
 
 
-target = 123456
+# optional functionality: set a hook to be passed every generation as it completes
+logs = []
 
-def measure_fitness(gene: Gene, target: int) -> float:
+def log_generation(count: int, generation: list[tuple[float], Gene]) -> None:
+    logs.append((count, generation))
+
+set_hook(log_generation)
+
+
+target = 123456
+def measure_fitness(gene: Gene) -> float:
     """Produces a fitness score. Passed as parameter to optimize_gene."""
-    return 1 / (abs(sum(b for b in gene.bases) - target)+1)
+    return 1 / (1 + abs(sum(gene.bases) - target))
 
 def mutate_gene(gene: Gene) -> Gene:
     """Mutates the Gene randomly. Passed as parameter to optimize_gene."""
@@ -78,10 +86,9 @@ def mutate_gene(gene: Gene) -> Gene:
             gene.bases[i] -= randint(0, 100)
     return gene
 
-
-count, population = optimize_gene(measure_fitness, mutate_gene, fitness_target=target)
+count, population = optimize_gene(measure_fitness, mutate_gene)
 best = population[0]
-score = sum(b for b in best.bases)
+score = sum(best.bases)
 
 print(f"{count} generations passed")
 print(f"the best result had {score=} compared to {target=})")
