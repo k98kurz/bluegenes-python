@@ -55,7 +55,7 @@ Recombines with another gene at the given indexes. If indices is None, between 1
 and ceil(log(len(self.bases))) random indices will be chosen. Returns the
 resultant Gene.
 
-##### `@classmethod make(n_bases: int, max_base_size: int, base_factory: Callable[[None], int | float | str], factory_args: list, factory_kwargs: dict, name: str) -> Gene:` 
+##### `@classmethod make(n_bases: int, name: str, max_base_size: int, base_factory: Callable[[None], int | float | str], factory_args: list, factory_kwargs: dict) -> Gene:` 
 
 Makes and returns a randomized Gene.
 
