@@ -147,10 +147,9 @@ class Gene:
         return Gene(name=name, bases=bases)
 
     @classmethod
-    def make(cls, n_bases: int, max_base_size: int = 10,
+    def make(cls, n_bases: int, name: str = None, *, max_base_size: int = 10,
              base_factory: Callable[[None], int|float|str] = None,
-             factory_args: list = [], factory_kwargs: dict = {},
-             name: str = None) -> Gene:
+             factory_args: list = [], factory_kwargs: dict = {},) -> Gene:
         """Makes and returns a randomized Gene."""
         if base_factory is not None and callable(base_factory):
             bases = [
@@ -207,8 +206,8 @@ class Allele:
                 n_bases = randint(0, max(len(g.bases) for g in self.genes))
             typert(n_bases, int, "n_bases")
             gene = Gene.make(
-                n_bases, max_base_size, base_factory, factory_args,
-                factory_kwargs
+                n_bases, max_base_size=max_base_size, base_factory=base_factory,
+                factory_args=factory_args,factory_kwargs=factory_kwargs
             )
         typert(gene, Gene, "gene")
 
@@ -265,8 +264,8 @@ class Allele:
             n_bases = n_bases or randint(0, max(len(g.bases) for g in self.genes))
             typert(n_bases, int, "n_bases")
             gene = Gene.make(
-                n_bases, max_base_size, base_factory, factory_args,
-                factory_kwargs
+                n_bases, max_base_size=max_base_size, base_factory=base_factory,
+                factory_args=factory_args,factory_kwargs=factory_kwargs
             )
         typert(gene, Gene, "gene")
 
