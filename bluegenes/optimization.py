@@ -19,6 +19,12 @@ def set_hook(func: Callable[[int, list[tuple[int|float, T]]], None]) -> None:
     _hook = func
 
 
+def unset_hook() -> None:
+    """Unsets the hook."""
+    global _hook
+    _hook = None
+
+
 def _optimize(
         opt_type: type,
         measure_fitness: Callable[[T, int|float], int|float],
@@ -76,7 +82,7 @@ def _optimize(
 
     count = 0
     fitness_scores: list[tuple[int|float, T]] = [
-        (measure_fitness(g, fitness_target), g)
+        (measure_fitness(g), g)
         for g in population
     ]
     fitness_scores.sort(key=lambda fs: fs[0])
@@ -94,7 +100,7 @@ def _optimize(
         children = [mutate_func(child) for child in children]
         population = [*children, *parents]
         fitness_scores: list[tuple[int|float, T]] = [
-            (measure_fitness(g, fitness_target), g)
+            (measure_fitness(g), g)
             for g in population
         ]
         fitness_scores.sort(key=lambda fs: fs[0])
@@ -109,16 +115,16 @@ def _optimize(
     return (count, population)
 
 
-def optimize_gene(measure_fitness: Callable[[Gene, int|float], int|float],
-                  mutate_gene: Callable[[Gene], Gene],
-                  initial_population: list[Gene] = None,
-                  population_size: int = 100, gene_size: int = 10,
-                  fitness_target: int|float = 1.0, max_iterations: int = 1000,
-                  base_factory: Callable[[Any], int|float|str] = None,
-                  factory_args: list[Any] = None,
-                  factory_kwargs: dict[str, Any] = None,
-                  gene_name: str = None, parents_per_generation: int = 10,
-                  ) -> tuple[int, list[Gene]]:
+def optimize_gene(
+        measure_fitness: Callable[[Gene, int|float], int|float],
+        mutate_gene: Callable[[Gene], Gene],
+        initial_population: list[Gene] = None, population_size: int = 100,
+        gene_size: int = 10, fitness_target: int|float = 1.0,
+        max_iterations: int = 1000,
+        base_factory: Callable[[Any], int|float|str] = None,
+        factory_args: list[Any] = None,
+        factory_kwargs: dict[str, Any] = None, gene_name: str = None,
+        parents_per_generation: int = 10) -> tuple[int, list[Gene]]:
     """Optimize a Gene given a measure_fitness function, a mutate_gene
         function, a population_size int, a gene_size int, a
         fitness_target float, and a max_iterations int. Supply
@@ -136,17 +142,16 @@ def optimize_gene(measure_fitness: Callable[[Gene, int|float], int|float],
     )
 
 
-def optimize_allele(measure_fitness: Callable[[Allele, int|float], int|float],
-                  mutate_allele: Callable[[Allele], Allele],
-                  initial_population: list[Allele] = None,
-                  population_size: int = 100, allele_size: int = 2,
-                  gene_size: int = 10, fitness_target: int|float = 1.0,
-                  max_iterations: int = 1000,
-                  base_factory: Callable[[Any], int|float|str] = None,
-                  factory_args: list[Any] = None,
-                  factory_kwargs: dict[str, Any] = None,
-                  allele_name: str = None, parents_per_generation: int = 10,
-                  ) -> tuple[int, list[Allele]]:
+def optimize_allele(
+        measure_fitness: Callable[[Allele, int|float], int|float],
+        mutate_allele: Callable[[Allele], Allele],
+        initial_population: list[Allele] = None, population_size: int = 100,
+        allele_size: int = 2, gene_size: int = 10,
+        fitness_target: int|float = 1.0, max_iterations: int = 1000,
+        base_factory: Callable[[Any], int|float|str] = None,
+        factory_args: list[Any] = None, factory_kwargs: dict[str, Any] = None,
+        allele_name: str = None, parents_per_generation: int = 10
+        ) -> tuple[int, list[Allele]]:
     """Optimize an Allele given a measure_fitness function, a
         mutate_allele function, a population_size int, a fitness_target
         float, and a max_iterations int. Supply base_factory to produce

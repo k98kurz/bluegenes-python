@@ -9,5 +9,6 @@ from .optimization import (
     optimize_allele,
     optimize_chromosome,
     optimize_genome,
-    set_hook
+    set_hook,
+    unset_hook,
 )

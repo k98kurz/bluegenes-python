@@ -33,7 +33,7 @@ class TestOptimizationForGenes(unittest.TestCase):
     def test_optimize_gene_exits_after_max_iterations_or_achieving_fitness_target(self):
         target = 123.456
 
-        def measure_fitness(gene: genes.Gene, target: float) -> float:
+        def measure_fitness(gene: genes.Gene) -> float:
             return 1 / abs(sum(gene.bases) - target)
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
@@ -53,18 +53,17 @@ class TestOptimizationForGenes(unittest.TestCase):
             measure_fitness=measure_fitness,
             mutate_gene=mutate_gene,
             initial_population=self.population(),
-            fitness_target=target,
-            max_iterations=1000,
+            max_iterations=100,
             population_size=100
         )
 
-        assert type(count) is int and count <= 1000
+        assert type(count) is int and count <= 100
         assert type(population) is list
         assert all(type(p) is genes.Gene for p in population)
         assert len(population) == 100
         best = (sum(population[0].bases), population[0])
 
-        assert count < 1000 or (best[0] - target)/target < 0.01
+        assert count < 100 or (best[0] - target)/target < 0.01
 
 
 class TestOptimizationForAlleles(unittest.TestCase):
@@ -114,9 +113,9 @@ class TestOptimizationForAlleles(unittest.TestCase):
     def test_optimize_allele_exits_after_max_iterations_or_achieving_fitness_target(self):
         target = 123.456
 
-        def measure_fitness(allele: genes.Allele, target: float) -> float:
+        def measure_fitness(allele: genes.Allele) -> float:
             sums = [sum(g.bases) for g in allele.genes]
-            return 1 / abs(sum(sums) - target)
+            return 1 / (1 + abs(sum(sums) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
             for i in range(len(gene.bases)):
@@ -139,19 +138,18 @@ class TestOptimizationForAlleles(unittest.TestCase):
             measure_fitness=measure_fitness,
             mutate_allele=mutate_allele,
             initial_population=self.population(),
-            fitness_target=target,
-            max_iterations=1000,
+            max_iterations=100,
             population_size=100
         )
 
-        assert type(count) is int and count <= 1000
+        assert type(count) is int and count <= 100
         assert type(population) is list
         assert all(type(p) is genes.Allele for p in population)
         assert len(population) == 100
         sums = [sum(g.bases) for g in population[0].genes]
         best = (sum(sums), population[0])
 
-        assert count < 1000 or (best[0] - target)/target < 0.01
+        assert count < 100 or (best[0] - target)/target < 0.01
 
 
 class TestOptimizationForChromosomes(unittest.TestCase):
@@ -230,9 +228,9 @@ class TestOptimizationForChromosomes(unittest.TestCase):
     def test_optimize_chromosome_exits_after_max_iterations_or_achieving_fitness_target(self):
         target = 123.456
 
-        def measure_fitness(chromosome: genes.Chromosome, target: float) -> float:
+        def measure_fitness(chromosome: genes.Chromosome) -> float:
             sums = [sum(g.bases) for a in chromosome.alleles for g in a.genes]
-            return 1 / abs(sum(sums) - target)
+            return 1 / (1 + abs(sum(sums) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
             for i in range(len(gene.bases)):
@@ -259,19 +257,18 @@ class TestOptimizationForChromosomes(unittest.TestCase):
             measure_fitness=measure_fitness,
             mutate_chromosome=mutate_chromosome,
             initial_population=self.population(),
-            fitness_target=target,
-            max_iterations=1000,
+            max_iterations=100,
             population_size=100
         )
 
-        assert type(count) is int and count <= 1000
+        assert type(count) is int and count <= 100
         assert type(population) is list
         assert all(type(p) is genes.Chromosome for p in population)
         assert len(population) == 100
         sums = [sum(g.bases) for a in population[0].alleles for g in a.genes]
         best = (sum(sums), population[0])
 
-        assert count < 1000 or (best[0] - target)/target < 0.01
+        assert count < 100 or (best[0] - target)/target < 0.01
 
 
 class TestOptimizationForGenomes(unittest.TestCase):
@@ -363,14 +360,14 @@ class TestOptimizationForGenomes(unittest.TestCase):
     def test_optimize_genome_exits_after_max_iterations_or_achieving_fitness_target(self):
         target = 123.456
 
-        def measure_fitness(genome: genes.Genome, target: float) -> float:
+        def measure_fitness(genome: genes.Genome) -> float:
             sums = [
                 sum(g.bases)
                 for c in genome.chromosomes
                 for a in c.alleles
                 for g in a.genes
             ]
-            return 1 / abs(sum(sums) - target)
+            return 1 / (1 + abs(sum(sums) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
             for i in range(len(gene.bases)):
@@ -401,12 +398,11 @@ class TestOptimizationForGenomes(unittest.TestCase):
             measure_fitness=measure_fitness,
             mutate_genome=mutate_genome,
             initial_population=self.population(),
-            fitness_target=target,
-            max_iterations=1000,
+            max_iterations=100,
             population_size=100
         )
 
-        assert type(count) is int and count <= 1000
+        assert type(count) is int and count <= 100
         assert type(population) is list
         assert all(type(p) is genes.Genome for p in population)
         assert len(population) == 100
@@ -418,7 +414,7 @@ class TestOptimizationForGenomes(unittest.TestCase):
         ]
         best = (sum(sums), population[0])
 
-        assert count < 1000 or (best[0] - target)/target < 0.01
+        assert count < 100 or (best[0] - target)/target < 0.01
 
 
 class TestOptimizationHookForGenes(unittest.TestCase):
@@ -438,12 +434,23 @@ class TestOptimizationHookForGenes(unittest.TestCase):
         optimization.set_hook(hook)
         assert optimization._hook is hook
 
+    def test_unset_hook_unsets__hook(self):
+        def hook (count: int, population: list[tuple[int, genes.Gene]]) -> None:
+            print((count, population))
+
+        assert optimization._hook is None
+        optimization.set_hook(hook)
+        assert optimization._hook is hook
+        optimization.unset_hook()
+        assert optimization._hook is None
+
     def test_hook_is_called_on_each_generation(self):
         logs = []
         def hook (count: int, population: list[tuple[int, genes.Gene]]) -> None:
             logs.append((count, population))
 
-        def measure_fitness(gene: genes.Gene, target: int):
+        target = 123
+        def measure_fitness(gene: genes.Gene):
             return 1 / (1 + abs(sum(b for b in gene.bases) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
@@ -456,10 +463,8 @@ class TestOptimizationHookForGenes(unittest.TestCase):
             return gene
 
         optimization.set_hook(hook)
-        target = 123
-        count, population = optimization.optimize_gene(
-            measure_fitness, mutate_gene, fitness_target=target,
-            max_iterations=100
+        count, _ = optimization.optimize_gene(
+            measure_fitness, mutate_gene, max_iterations=100
         )
 
         assert len(logs) == count
