@@ -107,7 +107,7 @@ Substitutes the Gene at the index with the given gene. If index is None, a
 random index will be used. If gene is None, adds a random gene using Gene.make,
 passing the kwargs. Returns self for chaining operations.
 
-##### `recombine(other: Allele, indices: list[int] = None, recombine_genes: bool = True, match_genes: bool = True) -> Allele:` 
+##### `recombine(other: Allele, indices: list[int] = None, recombine_genes: bool = True, match_genes: bool = False) -> Allele:` 
 
 Recombines with the other Allele, swapping at the given indices. If indices is
 None, between 1 and ceil(log(len(self.genes))) random indices will be chosen.
@@ -167,7 +167,7 @@ Substitutes the Allele at the index with the given allele. If index is None, a
 random index will be used. If allele is None, adds a random allele using
 Allele.make, passing the kwargs. Returns self for chaining operations.
 
-##### `recombine(other: Chromosome, indices: list[int] = None, recombine_alleles: bool = True, match_alleles: bool = True, recombine_genes: bool = True, match_genes: bool = True) -> Chromosome:` 
+##### `recombine(other: Chromosome, indices: list[int] = None, recombine_alleles: bool = True, match_alleles: bool = False, recombine_genes: bool = True, match_genes: bool = False) -> Chromosome:` 
 
 Recombines with the other Chromosome, swapping at the given indices. If indices
 is None, between 1 and ceil(log(len(self.alleles))) random indices will be
@@ -230,7 +230,7 @@ None, a random index will be used. If chromosome is None, adds a random
 chromosome using Chromosome.make, passing the kwargs. Returns self for chaining
 operations.
 
-##### `recombine(other: Genome, indices: list[int] = None, recombine_chromosomes: bool = True, match_chromosomes: bool = True, recombine_alleles: bool = True, match_alleles: bool = True, recombine_genes: bool = True, match_genes: bool = True) -> Genome:` 
+##### `recombine(other: Genome, indices: list[int] = None, recombine_chromosomes: bool = True, match_chromosomes: bool = False, recombine_alleles: bool = True, match_alleles: bool = False, recombine_genes: bool = True, match_genes: bool = False) -> Genome:` 
 
 Recombines with the other Genome, swapping at the given indices. If indices is
 None, between 1 and ceil(log(len(self.chromosomes))) random indices will be

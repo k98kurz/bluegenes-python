@@ -319,19 +319,19 @@ class TestAllele(unittest.TestCase):
             swapset.add(tuple(swaps))
         assert len(swapset) >= 2
 
-    def test_recombine_recombines_underlying_Genes_with_matching_name_and_index_by_default(self):
-        allele = self.allele.recombine(self.alternate, [1])
+    def test_recombine_recombines_underlying_Genes_with_different_name_and_index_by_default(self):
+        allele = self.allele.recombine(self.other, [1])
         recombined_genes = 0
         allele_bases = [b for g in self.allele.genes for b in g.bases]
-        other_bases = [b for g in self.alternate.genes for b in g.bases]
+        other_bases = [b for g in self.other.genes for b in g.bases]
         for g in allele.genes:
             if g not in self.allele.genes and g not in self.alternate.genes:
                 recombined_genes += 1
             assert all(b in allele_bases or b in other_bases for b in g.bases)
         assert recombined_genes >= 1
 
-    def test_recombine_does_not_recombine_underlying_Genes_with_different_names_by_default(self):
-        allele = self.allele.recombine(self.other, [1])
+    def test_recombine_does_not_recombine_underlying_Genes_with_different_names_when_specified(self):
+        allele = self.allele.recombine(self.other, [1], match_genes=True)
         recombined_genes = 0
         for g in allele.genes:
             if g not in self.allele.genes and g not in self.other.genes:
@@ -562,7 +562,7 @@ class TestChromosome(unittest.TestCase):
         for _ in range(10):
             ch1 = self.first_chromosome()
             ch2 = self.second_chromosome()
-            ch3 = ch1.recombine(ch2, recombine_genes=False)
+            ch3 = ch1.recombine(ch2, match_alleles=True, recombine_genes=False)
             swapped = False
             swaps = []
             for i in range(len(ch3.alleles)):
@@ -596,8 +596,8 @@ class TestChromosome(unittest.TestCase):
         assert recombined_alleles >= 1
         assert recombined_genes >= 1
 
-    def test_recombine_does_not_recombine_underlying_Alleles_or_Genes_with_different_names_by_default(self):
-        chromosome = self.chromosome.recombine(self.other, [1])
+    def test_recombine_does_not_recombine_underlying_Alleles_or_Genes_with_different_names_when_specified(self):
+        chromosome = self.chromosome.recombine(self.other, [1], match_alleles=True)
         main_genes = [g for a in self.chromosome.alleles for g in a.genes]
         other_genes = [b for g in self.other.alleles for b in g.genes]
         recombined_alleles = 0
@@ -895,7 +895,7 @@ class TestGnome(unittest.TestCase):
         for _ in range(10):
             gm1 = self.first_genome()
             gm2 = self.second_genome()
-            gm3 = gm1.recombine(gm2, recombine_alleles=False)
+            gm3 = gm1.recombine(gm2, recombine_chromosomes=False)
             swapped = False
             swaps = []
             for i in range(len(gm3.chromosomes)):
@@ -936,8 +936,8 @@ class TestGnome(unittest.TestCase):
         assert recombined_alleles >= 1
         assert recombined_genes >= 1
 
-    def test_recombine_does_not_recombine_underlying_Chromosomes_or_Genes_with_different_names_by_default(self):
-        genome = self.genome.recombine(self.other, [1])
+    def test_recombine_does_not_recombine_underlying_Chromosomes_or_Genes_with_different_names_when_specified(self):
+        genome = self.genome.recombine(self.other, [1], match_chromosomes=True, match_alleles=True, match_genes=True)
         main_alleles = [a for c in self.genome.chromosomes for a in c.alleles]
         main_genes = [g for a in main_alleles for g in a.genes]
         other_alleles = [a for c in self.other.chromosomes for a in c.alleles]

@@ -274,7 +274,7 @@ class Allele:
 
     def recombine(self, other: Allele, indices: list[int] = None,
                   recombine_genes: bool = True,
-                  match_genes: bool = True) -> Allele:
+                  match_genes: bool = False) -> Allele:
         """Recombines with the other Allele, swapping at the given
             indices. If indices is None, between 1 and ceil(log(len(self.genes)))
             random indices will be chosen. Recombines individual Genes
@@ -462,8 +462,8 @@ class Chromosome:
         return self
 
     def recombine(self, other: Chromosome, indices: list[int] = None,
-                  recombine_alleles: bool = True, match_alleles: bool = True,
-                  recombine_genes: bool = True, match_genes: bool = True
+                  recombine_alleles: bool = True, match_alleles: bool = False,
+                  recombine_genes: bool = True, match_genes: bool = False
                   ) -> Chromosome:
         """Recombines with the other Chromosome, swapping at the given
             indices. If indices is None, between 1 and ceil(log(len(self.alleles)))
@@ -686,9 +686,9 @@ class Genome:
 
     def recombine(self, other: Genome, indices: list[int] = None,
                   recombine_chromosomes: bool = True,
-                  match_chromosomes: bool = True,
-                  recombine_alleles: bool = True, match_alleles: bool = True,
-                  recombine_genes: bool = True, match_genes: bool = True
+                  match_chromosomes: bool = False,
+                  recombine_alleles: bool = True, match_alleles: bool = False,
+                  recombine_genes: bool = True, match_genes: bool = False
                   ) -> Genome:
         """Recombines with the other Genome, swapping at the given
             indices. If indices is None, between 1 and
