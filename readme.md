@@ -80,10 +80,14 @@ def mutate_gene(gene: Gene) -> Gene:
     """Mutates the Gene randomly. Passed as parameter to optimize_gene."""
     for i in range(len(gene.bases)):
         val = random()
-        if val <= 0.5:
-            gene.bases[i] += randint(0, 100)
+        if val <= 0.1:
+            gene.bases[i] = int(gene.bases[i] / randint(1, 3))
+        elif val <= 0.2:
+            gene.bases[i] = int(gene.bases[i] * randint(1, 3))
+        elif val <= 0.6:
+            gene.bases[i] += randint(0, 11)
         else:
-            gene.bases[i] -= randint(0, 100)
+            gene.bases[i] -= randint(0, 11)
     return gene
 
 count, population = optimize_gene(measure_fitness, mutate_gene)
