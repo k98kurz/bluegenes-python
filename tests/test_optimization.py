@@ -456,10 +456,14 @@ class TestOptimizationHookForGenes(unittest.TestCase):
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
             for i in range(len(gene.bases)):
                 val = random()
-                if val <= 0.5:
-                    gene.bases[i] += randint(0, 10)
+                if val <= 0.1:
+                    gene.bases[i] = int(gene.bases[i] / randint(1, 3))
+                elif val <= 0.2:
+                    gene.bases[i] = int(gene.bases[i] * randint(1, 3))
+                elif val <= 0.6:
+                    gene.bases[i] += randint(0, 11)
                 else:
-                    gene.bases[i] -= randint(0, 10)
+                    gene.bases[i] -= randint(0, 11)
             return gene
 
         optimization.set_hook(hook)
