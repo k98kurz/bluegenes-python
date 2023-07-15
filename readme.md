@@ -91,7 +91,7 @@ best = population[0]
 score = sum(best.bases)
 
 print(f"{count} generations passed")
-print(f"the best result had {score=} compared to {target=})")
+print(f"the best result had {score=} compared to {target=}")
 print(best)
 ```
 
