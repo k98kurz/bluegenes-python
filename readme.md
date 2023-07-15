@@ -37,7 +37,7 @@ These optimization functions have largely similar parameters for tuning the
 optimization process. See the [Usage](#Usage) section below.
 
 For more detailed documentation, see the
-[docs file](https://github.com/k98kurz/bluegenes/blob/master/dox.md)
+[docs file](https://github.com/k98kurz/bluegenes-python/blob/master/dox.md)
 generated automagically by [autodox](https://pypi.org/project/autodox).
 
 ## Installation
