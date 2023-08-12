@@ -18,8 +18,8 @@ genetic material is a sequence of ints, floats, or strs, and it is organized
 into the following hierarchy:
 
 - `Gene` contains bases (`list[int|float|str]`)
-- `Allele` contains `Gene`s
-- `Chromosome` contains `Allele`s
+- `Nucleosome` contains `Gene`s
+- `Chromosome` contains `Nucleosome`s
 - `Genome` contains `Chromosome`s
 
 Each of these classes has a `str name` attribute to identify the genetic
@@ -29,7 +29,7 @@ supplied in the relevant instantiation calls.
 There are four optimization functions available currently:
 
 - `optimize_gene` - optimizes a Gene
-- `optimize_allele` - optimizes an Allele
+- `optimize_nucleosome` - optimizes an Nucleosome
 - `optimize_chromosome` - optimizes a Chromosome
 - `optimize_genome` - optimizes a Genome
 

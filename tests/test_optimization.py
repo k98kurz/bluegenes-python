@@ -66,22 +66,22 @@ class TestOptimizationForGenes(unittest.TestCase):
         assert count < 100 or (best[0] - target)/target < 0.01
 
 
-class TestOptimizationForAlleles(unittest.TestCase):
-    def population(self) -> list[genes.Allele]:
+class TestOptimizationForNucleosomes(unittest.TestCase):
+    def population(self) -> list[genes.Nucleosome]:
         return [
-            genes.Allele("test", [
+            genes.Nucleosome("test", [
                 genes.Gene("gn1", [1.0, 2.0, 3.0, 4.0]),
                 genes.Gene("gn2", [2.1, 1.1, 4.1, 3.1]),
             ]),
-            genes.Allele("test", [
+            genes.Nucleosome("test", [
                 genes.Gene("gn1", [1.2, 2.2, 3.2, 4.2]),
                 genes.Gene("gn2", [2.3, 1.3, 4.3, 3.3]),
             ]),
-            genes.Allele("test", [
+            genes.Nucleosome("test", [
                 genes.Gene("gn1", [1.4, 2.4, 3.4, 4.4]),
                 genes.Gene("gn2", [2.5, 1.5, 4.5, 3.5]),
             ]),
-            genes.Allele("test", [
+            genes.Nucleosome("test", [
                 genes.Gene("gn1", [1.6, 2.6, 3.6, 4.6]),
                 genes.Gene("gn2", [2.7, 1.7, 4.7, 3.7]),
             ]),
@@ -110,11 +110,11 @@ class TestOptimizationForAlleles(unittest.TestCase):
                         parents.add(k)
         assert len(parents) <= 2
 
-    def test_optimize_allele_exits_after_max_iterations_or_achieving_fitness_target(self):
+    def test_optimize_nucleosome_exits_after_max_iterations_or_achieving_fitness_target(self):
         target = 123.456
 
-        def measure_fitness(allele: genes.Allele) -> float:
-            sums = [sum(g.bases) for g in allele.genes]
+        def measure_fitness(nucleosome: genes.Nucleosome) -> float:
+            sums = [sum(g.bases) for g in nucleosome.genes]
             return 1 / (1 + abs(sum(sums) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
@@ -130,13 +130,13 @@ class TestOptimizationForAlleles(unittest.TestCase):
                     gene.bases[i] -= random()
             return gene
 
-        def mutate_allele(allele: genes.Allele) -> genes.Allele:
-            allele.genes = [mutate_gene(g) for g in allele.genes]
-            return allele
+        def mutate_nucleosome(nucleosome: genes.Nucleosome) -> genes.Nucleosome:
+            nucleosome.genes = [mutate_gene(g) for g in nucleosome.genes]
+            return nucleosome
 
-        count, population = optimization.optimize_allele(
+        count, population = optimization.optimize_nucleosome(
             measure_fitness=measure_fitness,
-            mutate_allele=mutate_allele,
+            mutate_nucleosome=mutate_nucleosome,
             initial_population=self.population(),
             max_iterations=100,
             population_size=100
@@ -144,7 +144,7 @@ class TestOptimizationForAlleles(unittest.TestCase):
 
         assert type(count) is int and count <= 100
         assert type(population) is list
-        assert all(type(p) is genes.Allele for p in population)
+        assert all(type(p) is genes.Nucleosome for p in population)
         assert len(population) == 100
         sums = [sum(g.bases) for g in population[0].genes]
         best = (sum(sums), population[0])
@@ -156,41 +156,41 @@ class TestOptimizationForChromosomes(unittest.TestCase):
     def population(self) -> list[genes.Chromosome]:
         return [
             genes.Chromosome("test", [
-                genes.Allele("al1", [
+                genes.Nucleosome("al1", [
                     genes.Gene("gn1", [1.0, 2.0, 3.0, 4.0]),
                     genes.Gene("gn2", [2.1, 1.1, 4.1, 3.1]),
                 ]),
-                genes.Allele("al2", [
+                genes.Nucleosome("al2", [
                     genes.Gene("gn1", [11.0, 12.0, 13.0, 14.0]),
                     genes.Gene("gn2", [12.1, 11.1, 14.1, 13.1]),
                 ]),
             ]),
             genes.Chromosome("test", [
-                genes.Allele("al1", [
+                genes.Nucleosome("al1", [
                     genes.Gene("gn1", [1.2, 2.2, 3.2, 4.2]),
                     genes.Gene("gn2", [2.3, 1.3, 4.3, 3.3]),
                 ]),
-                genes.Allele("al2", [
+                genes.Nucleosome("al2", [
                     genes.Gene("gn1", [11.2, 12.2, 13.2, 14.2]),
                     genes.Gene("gn2", [12.3, 11.3, 14.3, 13.3]),
                 ]),
             ]),
             genes.Chromosome("test", [
-                genes.Allele("al1", [
+                genes.Nucleosome("al1", [
                     genes.Gene("gn1", [1.4, 2.4, 3.4, 4.4]),
                     genes.Gene("gn2", [2.5, 1.5, 4.5, 3.5]),
                 ]),
-                genes.Allele("al2", [
+                genes.Nucleosome("al2", [
                     genes.Gene("gn1", [11.4, 12.4, 13.4, 14.4]),
                     genes.Gene("gn2", [12.5, 11.5, 14.5, 13.5]),
                 ]),
             ]),
             genes.Chromosome("test", [
-                genes.Allele("al1", [
+                genes.Nucleosome("al1", [
                     genes.Gene("gn1", [1.6, 2.6, 3.6, 4.6]),
                     genes.Gene("gn2", [2.7, 1.7, 4.7, 3.7]),
                 ]),
-                genes.Allele("al2", [
+                genes.Nucleosome("al2", [
                     genes.Gene("gn1", [11.6, 12.6, 13.6, 14.6]),
                     genes.Gene("gn2", [12.7, 11.7, 14.7, 13.7]),
                 ]),
@@ -204,21 +204,21 @@ class TestOptimizationForChromosomes(unittest.TestCase):
     def test_child_from_parents_returns_recombination_of_two_random_parents(self):
         child = optimization.child_from_parents(self.parents)
 
-        parent_alleles = {
-            i: self.parents[i].alleles
+        parent_nucleosomes = {
+            i: self.parents[i].nucleosomes
             for i in range(len(self.parents))
         }
         parent_genes = {
             i: [g for a in pa for g in a.genes]
-            for i, pa in parent_alleles.items()
+            for i, pa in parent_nucleosomes.items()
         }
         parent_bases = {
             i: [b for g in pg for b in g.bases]
             for i, pg in parent_genes.items()
         }
         parents = set()
-        for allele in child.alleles:
-            for gene in allele.genes:
+        for nucleosome in child.nucleosomes:
+            for gene in nucleosome.genes:
                 for base in gene.bases:
                     for k, v in parent_bases.items():
                         if base in v:
@@ -229,7 +229,7 @@ class TestOptimizationForChromosomes(unittest.TestCase):
         target = 123.456
 
         def measure_fitness(chromosome: genes.Chromosome) -> float:
-            sums = [sum(g.bases) for a in chromosome.alleles for g in a.genes]
+            sums = [sum(g.bases) for a in chromosome.nucleosomes for g in a.genes]
             return 1 / (1 + abs(sum(sums) - target))
 
         def mutate_gene(gene: genes.Gene) -> genes.Gene:
@@ -245,12 +245,12 @@ class TestOptimizationForChromosomes(unittest.TestCase):
                     gene.bases[i] -= random()
             return gene
 
-        def mutate_allele(allele: genes.Allele) -> genes.Allele:
-            allele.genes = [mutate_gene(g) for g in allele.genes]
-            return allele
+        def mutate_nucleosome(nucleosome: genes.Nucleosome) -> genes.Nucleosome:
+            nucleosome.genes = [mutate_gene(g) for g in nucleosome.genes]
+            return nucleosome
 
         def mutate_chromosome(chromosome: genes.Chromosome) -> genes.Chromosome:
-            chromosome.alleles = [mutate_allele(a) for a in chromosome.alleles]
+            chromosome.nucleosomes = [mutate_nucleosome(a) for a in chromosome.nucleosomes]
             return chromosome
 
         count, population = optimization.optimize_chromosome(
@@ -265,7 +265,7 @@ class TestOptimizationForChromosomes(unittest.TestCase):
         assert type(population) is list
         assert all(type(p) is genes.Chromosome for p in population)
         assert len(population) == 100
-        sums = [sum(g.bases) for a in population[0].alleles for g in a.genes]
+        sums = [sum(g.bases) for a in population[0].nucleosomes for g in a.genes]
         best = (sum(sums), population[0])
 
         assert count < 100 or (best[0] - target)/target < 0.01
@@ -276,11 +276,11 @@ class TestOptimizationForGenomes(unittest.TestCase):
         return [
             genes.Genome("test", [
                 genes.Chromosome("chr1", [
-                    genes.Allele("al1", [
+                    genes.Nucleosome("al1", [
                         genes.Gene("gn1", [1.0, 2.0, 3.0, 4.0]),
                         genes.Gene("gn2", [2.1, 1.1, 4.1, 3.1]),
                     ]),
-                    genes.Allele("al2", [
+                    genes.Nucleosome("al2", [
                         genes.Gene("gn1", [11.0, 12.0, 13.0, 14.0]),
                         genes.Gene("gn2", [12.1, 11.1, 14.1, 13.1]),
                     ]),
@@ -288,11 +288,11 @@ class TestOptimizationForGenomes(unittest.TestCase):
             ]),
             genes.Genome("test", [
                 genes.Chromosome("chr1", [
-                    genes.Allele("al1", [
+                    genes.Nucleosome("al1", [
                         genes.Gene("gn1", [1.2, 2.2, 3.2, 4.2]),
                         genes.Gene("gn2", [2.3, 1.3, 4.3, 3.3]),
                     ]),
-                    genes.Allele("al2", [
+                    genes.Nucleosome("al2", [
                         genes.Gene("gn1", [11.2, 12.2, 13.2, 14.2]),
                         genes.Gene("gn2", [12.3, 11.3, 14.3, 13.3]),
                     ]),
@@ -300,11 +300,11 @@ class TestOptimizationForGenomes(unittest.TestCase):
             ]),
             genes.Genome("test", [
                 genes.Chromosome("chr1", [
-                    genes.Allele("al1", [
+                    genes.Nucleosome("al1", [
                         genes.Gene("gn1", [1.4, 2.4, 3.4, 4.4]),
                         genes.Gene("gn2", [2.5, 1.5, 4.5, 3.5]),
                     ]),
-                    genes.Allele("al2", [
+                    genes.Nucleosome("al2", [
                         genes.Gene("gn1", [11.4, 12.4, 13.4, 14.4]),
                         genes.Gene("gn2", [12.5, 11.5, 14.5, 13.5]),
                     ]),
@@ -312,11 +312,11 @@ class TestOptimizationForGenomes(unittest.TestCase):
             ]),
             genes.Genome("test", [
                 genes.Chromosome("chr1", [
-                    genes.Allele("al1", [
+                    genes.Nucleosome("al1", [
                         genes.Gene("gn1", [1.6, 2.6, 3.6, 4.6]),
                         genes.Gene("gn2", [2.7, 1.7, 4.7, 3.7]),
                     ]),
-                    genes.Allele("al2", [
+                    genes.Nucleosome("al2", [
                         genes.Gene("gn1", [11.6, 12.6, 13.6, 14.6]),
                         genes.Gene("gn2", [12.7, 11.7, 14.7, 13.7]),
                     ]),
@@ -335,13 +335,13 @@ class TestOptimizationForGenomes(unittest.TestCase):
             i: self.parents[i].chromosomes
             for i in range(len(self.parents))
         }
-        parent_alleles = {
-            i: [a for c in pc for a in c.alleles]
+        parent_nucleosomes = {
+            i: [a for c in pc for a in c.nucleosomes]
             for i, pc in parent_chromosomes.items()
         }
         parent_genes = {
             i: [g for a in pa for g in a.genes]
-            for i, pa in parent_alleles.items()
+            for i, pa in parent_nucleosomes.items()
         }
         parent_bases = {
             i: [b for g in pg for b in g.bases]
@@ -349,8 +349,8 @@ class TestOptimizationForGenomes(unittest.TestCase):
         }
         parents = set()
         for chromosome in child.chromosomes:
-            for allele in chromosome.alleles:
-                for gene in allele.genes:
+            for nucleosome in chromosome.nucleosomes:
+                for gene in nucleosome.genes:
                     for base in gene.bases:
                         for k, v in parent_bases.items():
                             if base in v:
@@ -364,7 +364,7 @@ class TestOptimizationForGenomes(unittest.TestCase):
             sums = [
                 sum(g.bases)
                 for c in genome.chromosomes
-                for a in c.alleles
+                for a in c.nucleosomes
                 for g in a.genes
             ]
             return 1 / (1 + abs(sum(sums) - target))
@@ -382,12 +382,12 @@ class TestOptimizationForGenomes(unittest.TestCase):
                     gene.bases[i] -= random()
             return gene
 
-        def mutate_allele(allele: genes.Allele) -> genes.Allele:
-            allele.genes = [mutate_gene(g) for g in allele.genes]
-            return allele
+        def mutate_nucleosome(nucleosome: genes.Nucleosome) -> genes.Nucleosome:
+            nucleosome.genes = [mutate_gene(g) for g in nucleosome.genes]
+            return nucleosome
 
         def mutate_chromosome(chromosome: genes.Chromosome) -> genes.Chromosome:
-            chromosome.alleles = [mutate_allele(a) for a in chromosome.alleles]
+            chromosome.nucleosomes = [mutate_nucleosome(a) for a in chromosome.nucleosomes]
             return chromosome
 
         def mutate_genome(genome: genes.Genome) -> genes.Genome:
@@ -409,7 +409,7 @@ class TestOptimizationForGenomes(unittest.TestCase):
         sums = [
             sum(g.bases)
             for c in population[0].chromosomes
-            for a in c.alleles
+            for a in c.nucleosomes
             for g in a.genes
         ]
         best = (sum(sums), population[0])

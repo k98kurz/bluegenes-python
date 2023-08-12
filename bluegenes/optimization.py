@@ -1,10 +1,10 @@
 from .errors import tert
-from .genes import Gene, Allele, Chromosome, Genome
+from .genes import Gene, Nucleosome, Chromosome, Genome
 from random import choices
 from typing import Any, Callable
 
 
-T = Genome | Chromosome | Allele | Gene
+T = Genome | Chromosome | Nucleosome | Gene
 
 _hook = None
 
@@ -30,7 +30,7 @@ def _optimize(
         measure_fitness: Callable[[T, int|float], int|float],
         mutate_func: Callable[[T], T],
         initial_population: list[Chromosome] = None, population_size: int = 100,
-        genome_size: int = 2, chromosome_size: int = 2, allele_size: int = 3,
+        genome_size: int = 2, chromosome_size: int = 2, nucleosome_size: int = 3,
         gene_size: int = 10, fitness_target: int|float = 1.0,
         max_iterations: int = 1000,
         base_factory: Callable[[Any], int|float|str] = None,
@@ -39,8 +39,8 @@ def _optimize(
         T_name: str = None, parents_per_generation: int = 10,
     ) -> tuple[int, list[T]]:
     """Internal function for abstracting optimization code."""
-    tert(opt_type in (Genome, Chromosome, Allele, Gene),
-         "opt_type must be one of Genome, Chromosome, Allele, or Gene")
+    tert(opt_type in (Genome, Chromosome, Nucleosome, Gene),
+         "opt_type must be one of Genome, Chromosome, Nucleosome, or Gene")
     tert(initial_population is None or all(type(p) is opt_type for p in initial_population),
          f"initial_population must be None or list[{opt_type.__name__}]")
     population = initial_population
@@ -48,7 +48,7 @@ def _optimize(
         if opt_type is Genome:
             population = [
                 Genome.make(
-                    genome_size, chromosome_size, allele_size, gene_size, T_name,
+                    genome_size, chromosome_size, nucleosome_size, gene_size, T_name,
                     base_factory=base_factory, factory_args=factory_args,
                     factory_kwargs=factory_kwargs
                 )
@@ -57,16 +57,16 @@ def _optimize(
         elif opt_type is Chromosome:
             population = [
                 Chromosome.make(
-                    chromosome_size, allele_size, gene_size, T_name,
+                    chromosome_size, nucleosome_size, gene_size, T_name,
                     base_factory=base_factory, factory_args=factory_args,
                     factory_kwargs=factory_kwargs
                 )
                 for _ in range(population_size)
             ]
-        elif opt_type is Allele:
+        elif opt_type is Nucleosome:
             population = [
-                Allele.make(
-                    allele_size, gene_size, T_name, base_factory=base_factory,
+                Nucleosome.make(
+                    nucleosome_size, gene_size, T_name, base_factory=base_factory,
                     factory_args=factory_args, factory_kwargs=factory_kwargs
                 )
                 for _ in range(population_size)
@@ -142,34 +142,34 @@ def optimize_gene(
     )
 
 
-def optimize_allele(
-        measure_fitness: Callable[[Allele, int|float], int|float],
-        mutate_allele: Callable[[Allele], Allele],
-        initial_population: list[Allele] = None, population_size: int = 100,
-        allele_size: int = 2, gene_size: int = 10,
+def optimize_nucleosome(
+        measure_fitness: Callable[[Nucleosome, int|float], int|float],
+        mutate_nucleosome: Callable[[Nucleosome], Nucleosome],
+        initial_population: list[Nucleosome] = None, population_size: int = 100,
+        nucleosome_size: int = 2, gene_size: int = 10,
         fitness_target: int|float = 1.0, max_iterations: int = 1000,
         base_factory: Callable[[Any], int|float|str] = None,
         factory_args: list[Any] = None, factory_kwargs: dict[str, Any] = None,
-        allele_name: str = None, parents_per_generation: int = 10
-        ) -> tuple[int, list[Allele]]:
-    """Optimize an Allele given a measure_fitness function, a
-        mutate_allele function, a population_size int, a fitness_target
+        nucleosome_name: str = None, parents_per_generation: int = 10
+        ) -> tuple[int, list[Nucleosome]]:
+    """Optimize an Nucleosome given a measure_fitness function, a
+        mutate_nucleosome function, a population_size int, a fitness_target
         float, and a max_iterations int. Supply base_factory to produce
         Gene bases other than random ints between 0 and 10,
         with optional factory_args and factory_kwargs which will be
-        passed to each call of base_factory. Supply allele_name to
-        assign the name to each generated Allele in the population.
-        Supply an allele_size int and a gene_size int to customize
+        passed to each call of base_factory. Supply nucleosome_name to
+        assign the name to each generated Nucleosome in the population.
+        Supply an nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
-        initial_population list[Allele] to specify the initial
+        initial_population list[Nucleosome] to specify the initial
         population. Returns the number of iterations and the final
         population.
     """
     return _optimize(
-        Allele, measure_fitness, mutate_allele, initial_population,
-        population_size, None, None, allele_size, gene_size,
+        Nucleosome, measure_fitness, mutate_nucleosome, initial_population,
+        population_size, None, None, nucleosome_size, gene_size,
         fitness_target, max_iterations, base_factory, factory_args,
-        factory_kwargs, allele_name, parents_per_generation
+        factory_kwargs, nucleosome_name, parents_per_generation
     )
 
 
@@ -177,7 +177,7 @@ def optimize_chromosome(
         measure_fitness: Callable[[Chromosome, int|float], int|float],
         mutate_chromosome: Callable[[Chromosome], Chromosome],
         initial_population: list[Chromosome] = None, population_size: int = 100,
-        chromosome_size: int = 2, allele_size: int = 3, gene_size: int = 10,
+        chromosome_size: int = 2, nucleosome_size: int = 3, gene_size: int = 10,
         fitness_target: int|float = 1.0, max_iterations: int = 1000,
         base_factory: Callable[[Any], int|float|str] = None,
         factory_args: list[Any] = None,
@@ -191,7 +191,7 @@ def optimize_chromosome(
         with optional factory_args and factory_kwargs which will be
         passed to each call of base_factory. Supply chromosome_name to
         assign the name to each generated Chromosome in the population.
-        Supply an allele_size int and a gene_size int to customize
+        Supply an nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
         initial_population list[Chromosome] to specify the initial
         population. Returns the number of iterations and the final
@@ -199,7 +199,7 @@ def optimize_chromosome(
     """
     return _optimize(
         Chromosome, measure_fitness, mutate_chromosome, initial_population,
-        population_size, None, chromosome_size, allele_size, gene_size,
+        population_size, None, chromosome_size, nucleosome_size, gene_size,
         fitness_target, max_iterations, base_factory, factory_args,
         factory_kwargs, chromosome_name, parents_per_generation
     )
@@ -209,7 +209,7 @@ def optimize_genome(
         measure_fitness: Callable[[Genome, int|float], int|float],
         mutate_genome: Callable[[Genome], Genome],
         initial_population: list[Genome] = None, population_size: int = 100,
-        genome_size: int = 1, chromosome_size: int = 2, allele_size: int = 3,
+        genome_size: int = 1, chromosome_size: int = 2, nucleosome_size: int = 3,
         gene_size: int = 10, fitness_target: int|float = 1.0,
         max_iterations: int = 1000,
         base_factory: Callable[[Any], int|float|str] = None,
@@ -224,7 +224,7 @@ def optimize_genome(
         with optional factory_args and factory_kwargs which will be
         passed to each call of base_factory. Supply genome_name to
         assign the name to each generated Genome in the population.
-        Supply an allele_size int and a gene_size int to customize
+        Supply an nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
         initial_population list[Genome] to specify the initial
         population. Returns the number of iterations and the final
@@ -232,7 +232,7 @@ def optimize_genome(
     """
     return _optimize(
         Genome, measure_fitness, mutate_genome, initial_population,
-        population_size, genome_size, chromosome_size, allele_size, gene_size,
+        population_size, genome_size, chromosome_size, nucleosome_size, gene_size,
         fitness_target, max_iterations, base_factory, factory_args,
         factory_kwargs, genome_name, parents_per_generation
     )
