@@ -325,7 +325,7 @@ class Nucleosome:
              max_base_size: int = 10,
              base_factory: Callable[[None], int|float|str] = None,
              factory_args: list = [], factory_kwargs: dict = {}) -> Nucleosome:
-        """Makes and returns an Nucleosome of randomized Genes."""
+        """Makes and returns a Nucleosome of randomized Genes."""
         genes = [
             Gene.make(
                 n_bases, max_base_size=max_base_size,
@@ -346,7 +346,7 @@ class Nucleosome:
 
     @classmethod
     def from_dict(cls, data: dict) -> Nucleosome:
-        """Deserialize an Nucleosome from a dict."""
+        """Deserialize a Nucleosome from a dict."""
         for name, genes in data.items():
             unpacked = [Gene.from_dict(d) for d in genes]
             return cls(name=name, genes=unpacked)
@@ -422,7 +422,7 @@ class Chromosome:
         return self.insert(index, self.nucleosomes[index].copy())
 
     def delete(self, index: int = None) -> Chromosome:
-        """Deletes the Nucleosome at the index. If index is None, an Nucleosome
+        """Deletes the Nucleosome at the index. If index is None, a Nucleosome
             is deleted at a random index. Returns self for chaining
             operations.
         """

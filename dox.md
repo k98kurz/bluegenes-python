@@ -116,7 +116,7 @@ with matching names if match_genes is True. Returns the new Nucleosome.
 
 ##### `@classmethod make(n_genes: int, n_bases: int, name: str, max_base_size: int, base_factory: Callable[[None], int | float | str], factory_args: list, factory_kwargs: dict) -> Nucleosome:`
 
-Makes and returns an Nucleosome of randomized Genes.
+Makes and returns a Nucleosome of randomized Genes.
 
 ##### `to_dict() -> dict:`
 
@@ -124,7 +124,7 @@ Serialize the Nucleosome to a dict.
 
 ##### `@classmethod from_dict(data: dict) -> Nucleosome:`
 
-Deserialize an Nucleosome from a dict.
+Deserialize a Nucleosome from a dict.
 
 ### `Chromosome(object)`
 
@@ -158,7 +158,7 @@ index is duplicated. Returns self for chaining operations.
 
 ##### `delete(index: int = None) -> Chromosome:`
 
-Deletes the Nucleosome at the index. If index is None, an Nucleosome is deleted at a
+Deletes the Nucleosome at the index. If index is None, a Nucleosome is deleted at a
 random index. Returns self for chaining operations.
 
 ##### `substitute(index: int, nucleosome: Nucleosome, n_genes: int, n_bases: int, max_base_size: int, base_factory: Callable[[None], int | float | str], factory_args: list = None, factory_kwargs: dict = None) -> Chromosome:`
@@ -267,12 +267,12 @@ population.
 
 ### `optimize_nucleosome(measure_fitness: Callable, mutate_nucleosome: Callable, initial_population: list = None, population_size: int = 100, nucleosome_size: int = 2, gene_size: int = 10, fitness_target: int | float = 1.0, max_iterations: int = 1000, base_factory: Callable = None, factory_args: list = None, factory_kwargs: dict = None, nucleosome_name: str = None, parents_per_generation: int = 10) -> tuple[int, list[bluegenes.genes.Nucleosome]]:`
 
-Optimize an Nucleosome given a measure_fitness function, a mutate_nucleosome function, a
+Optimize a Nucleosome given a measure_fitness function, a mutate_nucleosome function, a
 population_size int, a fitness_target float, and a max_iterations int. Supply
 base_factory to produce Gene bases other than random ints between 0 and 10, with
 optional factory_args and factory_kwargs which will be passed to each call of
 base_factory. Supply nucleosome_name to assign the name to each generated Nucleosome in
-the population. Supply an nucleosome_size int and a gene_size int to customize
+the population. Supply a nucleosome_size int and a gene_size int to customize
 generation of a random initial population, or supply initial_population
 list[Nucleosome] to specify the initial population. Returns the number of iterations
 and the final population.
@@ -284,7 +284,7 @@ function, a population_size int, a fitness_target float, and a max_iterations
 int. Supply base_factory to produce Gene bases other than random ints between 0
 and 10, with optional factory_args and factory_kwargs which will be passed to
 each call of base_factory. Supply chromosome_name to assign the name to each
-generated Chromosome in the population. Supply an nucleosome_size int and a
+generated Chromosome in the population. Supply a nucleosome_size int and a
 gene_size int to customize generation of a random initial population, or supply
 initial_population list[Chromosome] to specify the initial population. Returns
 the number of iterations and the final population.
@@ -296,7 +296,7 @@ function, a population_size int, a fitness_target float, and a max_iterations
 int. Supply base_factory to produce Gene bases other than random ints between 0
 and 10, with optional factory_args and factory_kwargs which will be passed to
 each call of base_factory. Supply genome_name to assign the name to each
-generated Genome in the population. Supply an nucleosome_size int and a gene_size
+generated Genome in the population. Supply a nucleosome_size int and a gene_size
 int to customize generation of a random initial population, or supply
 initial_population list[Genome] to specify the initial population. Returns the
 number of iterations and the final population.

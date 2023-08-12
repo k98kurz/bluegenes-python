@@ -29,7 +29,7 @@ supplied in the relevant instantiation calls.
 There are four optimization functions available currently:
 
 - `optimize_gene` - optimizes a Gene
-- `optimize_nucleosome` - optimizes an Nucleosome
+- `optimize_nucleosome` - optimizes a Nucleosome
 - `optimize_chromosome` - optimizes a Chromosome
 - `optimize_genome` - optimizes a Genome
 

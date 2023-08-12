@@ -152,14 +152,14 @@ def optimize_nucleosome(
         factory_args: list[Any] = None, factory_kwargs: dict[str, Any] = None,
         nucleosome_name: str = None, parents_per_generation: int = 10
         ) -> tuple[int, list[Nucleosome]]:
-    """Optimize an Nucleosome given a measure_fitness function, a
+    """Optimize a Nucleosome given a measure_fitness function, a
         mutate_nucleosome function, a population_size int, a fitness_target
         float, and a max_iterations int. Supply base_factory to produce
         Gene bases other than random ints between 0 and 10,
         with optional factory_args and factory_kwargs which will be
         passed to each call of base_factory. Supply nucleosome_name to
         assign the name to each generated Nucleosome in the population.
-        Supply an nucleosome_size int and a gene_size int to customize
+        Supply a nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
         initial_population list[Nucleosome] to specify the initial
         population. Returns the number of iterations and the final
@@ -191,7 +191,7 @@ def optimize_chromosome(
         with optional factory_args and factory_kwargs which will be
         passed to each call of base_factory. Supply chromosome_name to
         assign the name to each generated Chromosome in the population.
-        Supply an nucleosome_size int and a gene_size int to customize
+        Supply a nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
         initial_population list[Chromosome] to specify the initial
         population. Returns the number of iterations and the final
@@ -224,7 +224,7 @@ def optimize_genome(
         with optional factory_args and factory_kwargs which will be
         passed to each call of base_factory. Supply genome_name to
         assign the name to each generated Genome in the population.
-        Supply an nucleosome_size int and a gene_size int to customize
+        Supply a nucleosome_size int and a gene_size int to customize
         generation of a random initial population, or supply
         initial_population list[Genome] to specify the initial
         population. Returns the number of iterations and the final
